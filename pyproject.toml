@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "analytische_geometrie"
+version = "1.0.0"
+description = "Bibliothek für analytische Geometrie in 3D: Punkte, Geraden und Ebenen"
+readme = "README.md"
+authors = [
+    {name = "VacationAir", email = "vacationair.va@gmail.com"}
+]
+license = {text = "MIT"}
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Topic :: Scientific/Engineering :: Mathematics"
+]
+requires-python = ">=3.7"
+dependencies = [
+    "numpy>=1.19.0"
+]
+
+[project.urls]
+Homepage = "https://github.com/VacationAir/analytische-geometrie"
+Repository = "https://github.com/VacationAir/analytische-geometrie.git"
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "-ra -q -v"
+testpaths = ["tests"]
+python_files = "test_*.py"
+python_classes = "Test*"
+python_functions = "test_*"
