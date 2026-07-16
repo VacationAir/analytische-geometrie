@@ -89,7 +89,7 @@ class Gerade:
             Der Ortsvektor des Punkts auf der Geraden.
         """
         return self.stutzvektor + r * self.richtungsvektor
-    
+
     def quotient_berechnen(self, punkt):
         """
         Berechnet den Parameter r für einen gegebenen Punkt.
@@ -108,20 +108,24 @@ class Gerade:
             Der Parameter r, wenn der Punkt auf der Geraden liegt,
             sonst None.
         """
+        punkt = np.array(punkt, dtype=float)
         losungen_r = []
+
         for i in range(3):
-            if self.richtungsvektor[i] != 0: 
-                schritt1 = punkt[i] - self.stutzvektor[i]
-                schritt2 = schritt1 / self.richtungsvektor[i]
-                losungen_r.append(schritt2)
-            else:
-                if self.stutzvektor[i] != punkt[i]:
+            if np.allclose(self.richtungsvektor[i], 0):
+                if not np.allclose(punkt[i], self.stutzvektor[i]):
                     return None
-                
-        if losungen_r.count(losungen_r[0]) == len(losungen_r):
+            else:
+                r = (punkt[i] - self.stutzvektor[i]) / self.richtungsvektor[i]
+                losungen_r.append(r)
+
+        if len(losungen_r) == 0:
+            return 0.0
+
+        if np.allclose(losungen_r, losungen_r[0]):
             return losungen_r[0]
-        else:
-            return None
+
+        return None
 
     def enthaelt_punkt(self, punkt):
         """
@@ -205,6 +209,12 @@ class Gerade:
     #               Lage
     #--------------------------------------
 
+    def lotfusspunkt(self, Q):
+        AQ = Q- self.stutzvektor
+        r = np.dot(AQ, self.richtungsvektor)/ np.dot(self.richtungsvektor, self.richtungsvektor)
+        
+        return self.gerade(r)
+    
     def schnitt_mit_gerade(self, g2):
         """
         Berechnet den Schnittpunkt dieser Geraden mit einer anderen Geraden.
@@ -260,7 +270,7 @@ class Gerade:
             return math.degrees(result_in_radians)
         return result_in_radians
 
-    def lage_gerade_gerade(self, g2):
+    def lage_gerade(self, g2):
         """
         Bestimmt die Lagebeziehung dieser Geraden zu einer anderen Geraden.
 
