@@ -44,25 +44,25 @@ class TestGerade:
         """Testet identische Geraden"""
         g1 = Gerade([0, 0, 0], [1, 1, 1])
         g2 = Gerade([1, 1, 1], [2, 2, 2])
-        assert g1.lage_gerade_gerade(g2) == "identisch"
+        assert g1.lage_gerade(g2) == "identisch"
         
     def test_lage_gerade_gerade_parallel(self):
         """Testet parallele Geraden"""
         g1 = Gerade([0, 0, 0], [1, 1, 1])
         g2 = Gerade([1, 0, 0], [2, 2, 2])
-        assert g1.lage_gerade_gerade(g2) == "parallel"
+        assert g1.lage_gerade(g2) == "parallel"
         
     def test_lage_gerade_gerade_schneidend(self):
         """Testet sich schneidende Geraden"""
         g1 = Gerade([0, 0, 0], [1, 0, 0])
         g2 = Gerade([0, 0, 0], [0, 1, 0])
-        assert g1.lage_gerade_gerade(g2) == "schneidend"
+        assert g1.lage_gerade(g2) == "schneidend"
         
     def test_lage_gerade_gerade_windschief(self):
         """Testet windschiefe Geraden"""
         g1 = Gerade([0, 0, 0], [1, 0, 0])
         g2 = Gerade([0, 1, 0], [0, 1, 1])
-        assert g1.lage_gerade_gerade(g2) == "windschief"
+        assert g1.lage_gerade(g2) == "windschief"
         
     def test_schnitt_mit_gerade(self):
         """Testet den Schnittpunkt zweier Geraden"""

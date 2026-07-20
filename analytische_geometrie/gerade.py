@@ -191,7 +191,7 @@ class Gerade:
             Der Abstand zwischen den Geraden, wenn sie windschief sind,
             sonst None.
         """
-        if self.lage_gerade_gerade(g2) == "windschief":
+        if self.lage_gerade(g2) == "windschief":
             vektor_pq = g2.stutzvektor - self.stutzvektor
 
             normalvektor = np.cross(self.richtungsvektor, g2.richtungsvektor)
@@ -232,7 +232,7 @@ class Gerade:
             Der Schnittpunkt, wenn die Geraden sich schneiden,
             sonst None.
         """
-        if self.lage_gerade_gerade(g2) == "schneidend":
+        if self.lage_gerade(g2) == "schneidend":
             A = np.column_stack([self.richtungsvektor, -g2.richtungsvektor])
             b = g2.stutzvektor - self.stutzvektor
 
