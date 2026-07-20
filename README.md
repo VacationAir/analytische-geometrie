@@ -90,19 +90,88 @@ Unterstützt unter anderem:
 pip install analytische_geometrie
 ```
 
-## Beispiel
+# 📚 Beispiele
+
+Nachfolgend finden Sie einige Beispiele für die wichtigsten Funktionen von **`analytische_geometrie`**.
+
+## Grundlegende Geometrie
 
 ```python
 from analytische_geometrie import Punkt, Gerade
 
 A = Punkt([0, 0, 0])
 B = Punkt([2, 2, 2])
+C = Punkt([1, 0, 0])
 
-g = Gerade(A.punkt, B.punkt)
+g = Gerade.from_punkte(A.punkt, B.punkt)
 
-print(A.abstand_punkt(B))
-print(g.punkt(0.5))
+print(A.abstand_zu_punkt(B.punkt))
+print(g.gerade(0.5))
+print(g.enthaelt_punkt(C.punkt))
 ```
+
+## Ebenen
+
+```python
+from analytische_geometrie import Punkt, Ebene
+
+E = Ebene([1, 2, 3], [1, 1, 1])
+P = Punkt([4, 5, 6])
+
+print(E.abstand_punkt(P.punkt))
+print(E.enthaelt_punkt(P.punkt))
+print(E.spurpunkte())
+```
+
+## Fassade
+
+```python
+from analytische_geometrie import Punkt, Fassade
+
+fassade = Fassade(
+    [0, 0, 0],
+    [10, 0, 0],
+    [10, 8, 0],
+    [0, 8, 0]
+)
+
+print(fassade.flaecheninhalt())
+print(fassade.umfang())
+print(fassade.mittelpunkt)
+
+P = Punkt([5, 4, 0])
+print(fassade.enthaelt_punkt(P.punkt))
+```
+
+## Schnittpunkt zwischen Gerade und Ebene
+
+```python
+from analytische_geometrie import Gerade, Ebene
+
+g = Gerade([0, 0, 0], [1, 1, 1])
+E = Ebene([1, 0, 0], [0, 1, 0])
+
+print(E.lage_gerade(g))
+print(E.schnittpunkt_gerade(g))
+```
+
+## Winkelberechnungen
+
+```python
+from analytische_geometrie import Gerade, Ebene
+
+g1 = Gerade([0, 0, 0], [1, 0, 0])
+g2 = Gerade([0, 0, 0], [1, 1, 0])
+
+print(g1.winkel_zwei_geraden(g2, deg=True))
+
+E = Ebene([0, 0, 0], [0, 0, 1])
+print(E.schnittwinkel_gerade(g1, deg=True))
+
+E2 = Ebene([0, 0, 0], [1, 1, 0])
+print(E.schnittwinkel_ebene(E2, deg=True))
+```
+
 
 ## Abhängigkeiten
 
