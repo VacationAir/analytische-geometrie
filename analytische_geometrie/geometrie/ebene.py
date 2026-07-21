@@ -42,8 +42,13 @@ class Ebene:
             Wenn die Vektoren nicht die Dimension 3 haben oder der
             Normalenvektor der Nullvektor ist.
         """
-        self.punkt = np.array(punkt)
-        self.norm_vektor = np.array(norm_vektor)
+        self.punkt = np.array(punkt, dtype=float)
+        self.norm_vektor = np.array(norm_vektor, dtype=float)
+        if self.punkt.shape != (3,) or self.norm_vektor.shape != (3,):
+            raise ValueError("Vektoren müssen Dimension 3 haben")
+
+        if np.allclose(np.linalg.norm(self.norm_vektor),0):
+            raise ValueError("Normalenvektor darf nicht der Nullvektor sein")
     
     @classmethod
     def from_parameterform(cls, punkt, v1, v2):
@@ -73,7 +78,13 @@ class Ebene:
             Wenn die Vektoren nicht die Dimension 3 haben oder die
             Richtungsvektoren linear abhängig sind.
         """
+        v1 = np.array(v1, dtype=float)
+        v2 = np.array(v2, dtype=float)
+
         norm_vektor = np.cross(v1, v2)
+        if np.allclose(np.linalg.norm(norm_vektor), 0):
+            raise ValueError("Richtungsvektoren sind linear abhängig")
+        
         return cls(punkt, norm_vektor)
     
     def ebene(self, x_vektor):
@@ -326,13 +337,14 @@ class Ebene:
             liegt, wird 0 zurückgegeben.
         """
         if not self.enthaelt_punkt(punkt):
-            zaehler = abs(np.dot(punkt - self.punkt, self.norm_vektor))
+            p_array = punkt.punkt if isinstance(punkt, Punkt) else np.array(punkt)
+            zaehler = abs(np.dot(p_array - self.punkt, self.norm_vektor))
             nenner = np.linalg.norm(self.norm_vektor)
             d = zaehler / nenner
         
             return d
         else:
-            return 0
+            return 0    
     
     def abstand_gerade(self, g: Gerade):
         """

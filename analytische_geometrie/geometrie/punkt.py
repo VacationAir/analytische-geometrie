@@ -1,5 +1,4 @@
-import numpy as np
-
+from ..utils.vector_utils import Vector
 class Punkt:
     """
     Repräsentiert einen Punkt im dreidimensionalen Raum.
@@ -34,7 +33,10 @@ class Punkt:
         ValueError
             Wenn die Eingabe nicht genau drei Koordinaten enthält.
         """
-        self.punkt = np.array(punkt)
+        if isinstance(punkt, Punkt):
+            self.punkt = punkt.punkt
+        else:
+            self.punkt = Vector(punkt)
     
     def get_punkt(self):
         """
@@ -97,8 +99,10 @@ class Punkt:
         float
             Der euklidische Abstand zwischen den beiden Punkten.
         """
-        a = self.punkt - punkt2
-        return np.linalg.norm(a)
+        p2 = punkt2.punkt if isinstance(punkt2, Punkt) else Vector(punkt2)
+        a = self.punkt - p2
+
+        return a.mod()
     
     def punkt_punkt(self, punkt2):
         """
@@ -113,7 +117,8 @@ class Punkt:
 
         Returns
         -------
-        numpy.ndarray
-            Der Verbindungsvektor (punkt2 - self.punkt) als 3D-Array.
+        Vector
+            Der Verbindungsvektor (punkt2 - self.punkt) als Vector-Objekt.
         """
-        return punkt2 - self.punkt
+        p2 = punkt2.punkt if isinstance(punkt2, Punkt) else Vector(punkt2)
+        return p2 - self.punkt

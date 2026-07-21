@@ -1,4 +1,3 @@
-import pytest
 import numpy as np
 from analytische_geometrie.ebene import Ebene
 from analytische_geometrie.gerade import Gerade
@@ -103,3 +102,33 @@ class TestEbene:
         for s in spur:
             if s[0] is not None:
                 assert np.isclose(s[0], 0)
+
+    def test_huge_numbers(self):
+        E = Ebene(
+            [1e150, 1e150, 1e150],
+            [1e150, -1e150, 1e150]
+        )
+
+        p = np.array([1e150, 1e150, 1e150])
+
+        assert E.enthaelt_punkt(p)
+
+    def test_random_intersections(self):
+
+        rng = np.random.default_rng(42)
+
+        for _ in range(10000):
+
+            p = rng.normal(size=3)
+            n = rng.normal(size=3)
+
+            E = Ebene(p,n)
+
+            q = p + rng.normal(size=3)
+
+            q = q - (
+                np.dot(q-p,n)
+                / np.dot(n,n)
+            ) * n
+
+            assert E.enthaelt_punkt(q)

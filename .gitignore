@@ -13,6 +13,7 @@ build/
 *.swp
 *.swo
 .env
+.venv/
 venv/
 env/
 .pytest_cache/

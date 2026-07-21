@@ -1,35 +1,71 @@
 [build-system]
-requires = ["setuptools>=61.0", "wheel"]
+requires = ["setuptools>=69", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "analytische_geometrie"
-version = "1.0.0"
-description = "Bibliothek für analytische Geometrie in 3D: Punkte, Geraden und Ebenen"
+version = "1.0.3"
+description = "3D analytical geometry library for points, lines, planes and polygonal surfaces."
 readme = "README.md"
+requires-python = ">=3.9"
+
 authors = [
-    {name = "VacationAir", email = "vacationair.va@gmail.com"}
+    { name = "VacationAir", email = "vacationair.va@gmail.com" }
 ]
-license = {text = "MIT"}
+
+license = { text = "MIT" }
+
+keywords = [
+    "geometry",
+    "analytical geometry",
+    "3d",
+    "mathematics",
+    "numpy",
+    "line",
+    "plane",
+    "point",
+    "vector",
+]
+
 classifiers = [
-    "Programming Language :: Python :: 3",
-    "License :: OSI Approved :: MIT License",
+    "Development Status :: 5 - Production/Stable",
+
+    "Intended Audience :: Developers",
+    "Intended Audience :: Education",
+    "Intended Audience :: Science/Research",
+
     "Operating System :: OS Independent",
-    "Topic :: Scientific/Engineering :: Mathematics"
+
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+
+    "Topic :: Education",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Scientific/Engineering :: Mathematics",
+    "Topic :: Software Development :: Libraries :: Python Modules",
 ]
-requires-python = ">=3.7"
+
 dependencies = [
-    "numpy>=1.19.0"
+    "numpy>=1.21",
 ]
 
 [project.urls]
 Homepage = "https://github.com/VacationAir/analytische-geometrie"
-Repository = "https://github.com/VacationAir/analytische-geometrie.git"
+Documentation = "https://github.com/VacationAir/analytische-geometrie#readme"
+Repository = "https://github.com/VacationAir/analytische-geometrie"
+Issues = "https://github.com/VacationAir/analytische-geometrie/issues"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+include = ["analytische_geometrie*"]
 
 [tool.pytest.ini_options]
-minversion = "6.0"
-addopts = "-ra -q -v"
+minversion = "7.0"
+addopts = "-ra -q"
 testpaths = ["tests"]
-python_files = "test_*.py"
-python_classes = "Test*"
-python_functions = "test_*"
