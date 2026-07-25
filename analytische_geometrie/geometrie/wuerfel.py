@@ -1,28 +1,29 @@
 import math
+from .punkt import Punkt
 from .gerade import Gerade
 from .ebene import Ebene
 from .fassade import Fassade
-from ..utils.vector_utils import Vector
+from .vektor import Vektor
 
 class Wuerfel:
     def __init__(self, P_min, P_max):
-        self.p_min = Vector(P_min)
-        self.p_max = Vector(P_max)
+        self.p_min = Punkt(P_min)
+        self.p_max = Punkt(P_max)
         self.a = (self.p_max-self.p_min).mod()/math.sqrt(3)
 
         x0, y0, z0 = self.p_min.x, self.p_min.y, self.p_min.z
         x1, y1, z1 = self.p_max.x, self.p_max.y, self.p_max.z
 
         # Vértices del cubo
-        v1 = Vector(x0, y0, z0)
-        v2 = Vector(x1, y0, z0)
-        v3 = Vector(x1, y1, z0)
-        v4 = Vector(x0, y1, z0)
+        v1 = Punkt(x0, y0, z0)
+        v2 = Punkt(x1, y0, z0)
+        v3 = Punkt(x1, y1, z0)
+        v4 = Punkt(x0, y1, z0)
         
-        v5 = Vector(x0, y0, z1)
-        v6 = Vector(x1, y0, z1)
-        v7 = Vector(x1, y1, z1)
-        v8 = Vector(x0, y1, z1)
+        v5 = Punkt(x0, y0, z1)
+        v6 = Punkt(x1, y0, z1)
+        v7 = Punkt(x1, y1, z1)
+        v8 = Punkt(x0, y1, z1)
 
         # Creas las 6 fachadas/caras
         self.unten  = Fassade(v1, v2, v3, v4)
@@ -52,7 +53,7 @@ class Wuerfel:
         return self.a/2
     
     def enthaelt_punkt(self, Q):
-        q = Vector(Q)
+        q = Punkt(Q)
         return (self.p_min.x <= q.x <= self.p_max.x and self.p_min.y <= q.y <= self.p_max.y and self.p_min.z <= q.z <= self.p_max.z)
     
     def flaeche_enthaelt_punkt(self, Q):
@@ -63,7 +64,7 @@ class Wuerfel:
         return False
 
     def mittelpunkt(self):
-        return Vector((self.p_max-self.p_min) *0.5)
+        return Punkt((self.p_max-self.p_min) *0.5)
     
     def punkt_in_kante(self, Q):
         for F in self.flaechen:
@@ -156,7 +157,7 @@ class Wuerfel:
         if flaeche is None:
             ergebnis = []
             for F in self.flaechen:
-                ergebnis.append(F)
+                ergebnis.append(F.lage_fassade(F2))
 
             return ergebnis
         

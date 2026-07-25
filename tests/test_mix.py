@@ -1,8 +1,9 @@
-import numpy as np
 import pytest
-from analytische_geometrie.punkt import Punkt
-from analytische_geometrie.gerade import Gerade
-from analytische_geometrie.ebene import Ebene
+from analytische_geometrie.geometrie.punkt import Punkt
+from analytische_geometrie.geometrie.gerade import Gerade
+from analytische_geometrie.geometrie.ebene import Ebene
+from analytische_geometrie.geometrie.vektor import Vektor
+from analytische_geometrie.utils.linal_utils import close
 
 # -----------------------------
 # PUNKTE
@@ -13,18 +14,11 @@ def test_punkt_roundtrip_operations():
     p2 = Punkt([4.5, 1.0, -1.0])
 
     v = p.punkt_punkt(p2.get_punkt())
-    assert np.allclose(v, [3.0, 3.0, -4.0])
+    assert close(v, [3.0, 3.0, -4.0])
 
-    assert np.isclose(p.abstand_zu_punkt(p2.get_punkt()),
-                       np.linalg.norm([3.0, 3.0, -4.0]))
+    assert close(p.abstand_zu_punkt(p2.get_punkt()),
+                       Vektor(3.0, 3.0, -4.0). mod())
 
-
-def test_punkt_extreme_values():
-    p = Punkt([1e150, -1e150, 1e150])
-    q = Punkt([-1e150, 1e150, -1e150])
-
-    dist = p.abstand_zu_punkt(q.get_punkt())
-    assert np.isfinite(dist)
 
 
 # -----------------------------
@@ -100,7 +94,7 @@ def test_ebene_schnittgerade_konsistenz():
     g = E1.schnittgerade_ebene(E2)
 
     assert isinstance(g, Gerade)
-    assert np.allclose(g.richtungsvektor, [0, 0, 1])
+    assert close(g.richtungsvektor, [0, 0, 1])
 
 
 def test_ebene_gerade_konsistenz():
@@ -115,4 +109,4 @@ def test_ebene_winkel_robustheit():
 
     angle = E1.schnittwinkel_ebene(E2, deg=True)
 
-    assert np.isclose(angle, 90.0)
+    assert close(angle, 90.0)

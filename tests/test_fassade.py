@@ -1,8 +1,8 @@
-import numpy as np
-import pytest
-from analytische_geometrie.fassade import Fassade
-from analytische_geometrie.punkt import Punkt
-
+import math
+from analytische_geometrie.geometrie.fassade import Fassade
+from analytische_geometrie.geometrie.punkt import Punkt
+from analytische_geometrie.geometrie.vektor import Vektor
+from analytische_geometrie.utils.linal_utils import close
 
 class TestFassadeQuadratischEben:
     """
@@ -21,11 +21,11 @@ class TestFassadeQuadratischEben:
 
     def test_flaecheninhalt(self):
         """Überprüft, ob der Flächeninhalt korrekt als 4.0 berechnet wird"""
-        assert np.isclose(self.f.flaecheninhalt(), 4.0)
+        assert close(self.f.flaecheninhalt(), 4.0)
 
     def test_mittelpunkt(self):
         """Überprüft, ob der Mittelpunkt bei (1, 1, 0) liegt"""
-        assert np.allclose(self.f.mittelpunkt, [1.0, 1.0, 0.0])
+        assert close(self.f.mittelpunkt, [1.0, 1.0, 0.0])
 
     def test_enthaelt_punkt_innen(self):
         """Testet einen Punkt innerhalb der Fassade"""
@@ -115,8 +115,8 @@ class TestFassadeInkliniert3D:
 
     def test_flaecheninhalt_geneigt(self):
         """Überprüft den Flächeninhalt der schiefen Fassade (Breite * Höhe)"""
-        erwartete_flaeche = 2.0 * np.sqrt(2.0)
-        assert np.isclose(self.f.flaecheninhalt(), erwartete_flaeche)
+        erwartete_flaeche = 2.0 * math.sqrt(2.0)
+        assert close(self.f.flaecheninhalt(), erwartete_flaeche)
 
     def test_enthaelt_punkt_innen_geneigt(self):
         """Testet den exakten Mittelpunkt der geneigten Fassade"""
@@ -160,7 +160,7 @@ class TestFassadeSuperIrregular3D:
 
     def setup_method(self):
         """Erstellt das geneigte, komplett asymmetrische Trapezoid"""
-        c = np.cos(np.radians(45))  # ca. 0.70710678
+        c = math.cos(math.radians(45))  # ca. 0.70710678
         
         self.f = Fassade(
             [0.0, 0.0, 0.0],          # X1
@@ -175,7 +175,7 @@ class TestFassadeSuperIrregular3D:
         Flach: [2.0, 1.5, 0.0]
         Rotiert: [2.0, 1.5 * cos(45°), 1.5 * sin(45°)]
         """
-        c = np.cos(np.radians(45))
+        c = math.cos(math.radians(45))
         p = Punkt([2.0, 1.5 * c, 1.5 * c])
         assert self.f.enthaelt_punkt(p.punkt) is True
 
@@ -185,7 +185,7 @@ class TestFassadeSuperIrregular3D:
         Flach: [-1.0, 1.0, 0.0] (Liegt links außerhalb der Kante X4-X1)
         Rotiert: [-1.0, 1.0 * cos(45°), 1.0 * sin(45°)]
         """
-        c = np.cos(np.radians(45))
+        c = math.cos(math.radians(45))
         p = Punkt([-1.0, 1.0 * c, 1.0 * c])
         assert self.f.enthaelt_punkt(p.punkt) is False
 
@@ -195,7 +195,7 @@ class TestFassadeSuperIrregular3D:
         Flach: [4.0, -1.5, 0.0]
         Rotiert: [4.0, -1.5 * cos(45°), -1.5 * sin(45°)]
         """
-        c = np.cos(np.radians(45))
+        c = math.cos(math.radians(45))
         p = Punkt([4.0, -1.5 * c, -1.5 * c])
         assert self.f.enthaelt_punkt(p.punkt) is False
 
@@ -203,7 +203,7 @@ class TestFassadeSuperIrregular3D:
         """
         Testet einen Punkt, der in 2D passt, aber im 3D-Raum über der schiefen Fassade schwebt.
         """
-        c = np.cos(np.radians(45))
+        c = math.cos(math.radians(45))
         # Korrekter Innenpunkt, aber z-Koordinate manipuliert (+1.0)
         p = Punkt([2.0, 1.5 * c, (1.5 * c) + 1.0])
         assert self.f.enthaelt_punkt(p.punkt) is False
@@ -235,14 +235,14 @@ class TestFassadeInteraktionen3D:
         # Schnitt einer identischen Fassade gibt die Fassade selbst zurück
         schnitt = self.f1.schnitt_fassade(f2)
         assert isinstance(schnitt, Fassade)
-        assert np.allclose(schnitt.mittelpunkt, self.f1.mittelpunkt)
+        assert close(schnitt.mittelpunkt, self.f1.mittelpunkt)
 
     def test_interaktion_parallel(self):
         """Fassade parallel verschoben auf z = 5.0"""
         f2 = Fassade([0, 0, 5], [2, 0, 5], [2, 2, 5], [0, 2, 5])
         assert self.f1.lage_fassade(f2) == "parallel"
         assert self.f1.schnitt_fassade(f2) is None
-        assert np.isclose(self.f1.abstand_fassade(f2), 5.0)
+        assert close(self.f1.abstand_fassade(f2), 5.0)
 
     def test_interaktion_schneidend_perfekt(self):
         """
@@ -261,7 +261,7 @@ class TestFassadeInteraktionen3D:
         gS = self.f1.schnitt_fassade(f2)
         assert gS is not None
         # Die Gerade muss durch den Schnittbereich verlaufen (z.B. Punkt [1, 1, 0])
-        assert np.isclose(gS.abstand_zu_punkt([1, 1, 0]), 0.0)
+        assert close(gS.abstand_zu_punkt(Vektor(1, 1, 0)), 0.0)
 
     def test_interaktion_ausserhalb(self):
         """
@@ -272,7 +272,7 @@ class TestFassadeInteraktionen3D:
         assert self.f1.lage_fassade(f2) == "ausserhalb"
         assert self.f1.schnitt_fassade(f2) is None
         # Der Abstand sollte einfach die Distanz zwischen den nächsten Kanten sein (10 - 2 = 8)
-        assert np.isclose(self.f1.abstand_fassade(f2), 8.0)
+        assert close(self.f1.abstand_fassade(f2), 8.0)
 
     #-----------------------------------------------------------------------#
     # 2. Tests für KOPLANARE Fälle (Gleiche Ebene z=0)
@@ -283,7 +283,7 @@ class TestFassadeInteraktionen3D:
         f2 = Fassade([5, 0, 0], [7, 0, 0], [7, 2, 0], [5, 2, 0])
         assert self.f1.lage_fassade(f2) == "koplanar_ausserhalb"
         assert self.f1.schnitt_fassade(f2) is None
-        assert np.isclose(self.f1.abstand_fassade(f2), 3.0) # Distanz zwischen x=2 und x=5
+        assert close(self.f1.abstand_fassade(f2), 3.0) # Distanz zwischen x=2 und x=5
 
     def test_interaktion_kanten_schneidend(self):
         """
@@ -297,8 +297,8 @@ class TestFassadeInteraktionen3D:
         # Sollte exakt den einzelnen Schnittpunkt der Rahmen zurückgeben
         schnitt_pt = self.f1.schnitt_fassade(f2)
         assert schnitt_pt is not None
-        assert np.allclose(schnitt_pt, [2.0, 1.0, 0.0])
-        assert np.isclose(self.f1.abstand_fassade(f2), 0.0)
+        assert close(schnitt_pt, [2.0, 1.0, 0.0])
+        assert close(self.f1.abstand_fassade(f2), 0.0)
 
     def test_interaktion_koplanar_schneidend(self):
         """
@@ -313,14 +313,14 @@ class TestFassadeInteraktionen3D:
         f_schock = self.f1.schnitt_fassade(f2)
         assert isinstance(f_schock, Fassade)
         # Die Fläche des überlappenden 1x1 Quadrats muss 1.0 sein
-        assert np.isclose(f_schock.flaecheninhalt(), 1.0)
-        assert np.isclose(self.f1.abstand_fassade(f2), 0.0)
+        assert close(f_schock.flaecheninhalt(), 1.0)
+        assert close(self.f1.abstand_fassade(f2), 0.0)
 
     def test_interaktion_auf_kante(self):
         """Zwei Fassaden liegen perfekt Kante an Kante (Bordsteinkontakt)"""
         f2 = Fassade([2, 0, 0], [4, 0, 0], [4, 2, 0], [2, 2, 0])
         assert self.f1.lage_fassade(f2) == "auf_kante"
-        assert np.isclose(self.f1.abstand_fassade(f2), 0.0)
+        assert close(self.f1.abstand_fassade(f2), 0.0)
 
     def test_interaktion_beruehrend_ecke(self):
         """Zwei Fassaden berühren sich nur exakt an einer einzigen Ecke (z.B. bei [2,2,0])"""
@@ -329,8 +329,8 @@ class TestFassadeInteraktionen3D:
         
         schnitt_pt = self.f1.schnitt_fassade(f2)
         assert schnitt_pt is not None
-        assert np.allclose(schnitt_pt, [2.0, 2.0, 0.0])
-        assert np.isclose(self.f1.abstand_fassade(f2), 0.0)
+        assert close(schnitt_pt, [2.0, 2.0, 0.0])
+        assert close(self.f1.abstand_fassade(f2), 0.0)
 
     def test_interaktion_auf_kante_teilweise(self):
         f2 = Fassade(
@@ -341,7 +341,7 @@ class TestFassadeInteraktionen3D:
         )
 
         assert self.f1.lage_fassade(f2) == "auf_kante"
-        assert np.isclose(self.f1.abstand_fassade(f2), 0.0)
+        assert close(self.f1.abstand_fassade(f2), 0.0)
 
     def test_interaktion_colinear_getrennt(self):
         f2 = Fassade(

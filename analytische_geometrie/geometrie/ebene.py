@@ -1,7 +1,8 @@
-import numpy as np
+import math
 from .punkt import Punkt
 from .gerade import Gerade
-import math
+from .vektor import Vektor
+from ..utils.linal_utils import linsys_solve, close
 
 class Ebene:
     """
@@ -19,9 +20,9 @@ class Ebene:
 
     Attributes
     ----------
-    punkt : numpy.ndarray
+    punkt : Vektor
         Ein Punkt auf der Ebene.
-    norm_vektor : numpy.ndarray
+    norm_vektor : Vektor
         Der Normalenvektor der Ebene.
     """
 
@@ -42,12 +43,12 @@ class Ebene:
             Wenn die Vektoren nicht die Dimension 3 haben oder der
             Normalenvektor der Nullvektor ist.
         """
-        self.punkt = np.array(punkt, dtype=float)
-        self.norm_vektor = np.array(norm_vektor, dtype=float)
-        if self.punkt.shape != (3,) or self.norm_vektor.shape != (3,):
+        self.punkt = Vektor(punkt)
+        self.norm_vektor = Vektor(norm_vektor)
+        if len(self.punkt) != 3 or len(self.norm_vektor) != 3:
             raise ValueError("Vektoren müssen Dimension 3 haben")
 
-        if np.allclose(np.linalg.norm(self.norm_vektor),0):
+        if close(self.norm_vektor.mod(), 0):
             raise ValueError("Normalenvektor darf nicht der Nullvektor sein")
     
     @classmethod
@@ -78,11 +79,11 @@ class Ebene:
             Wenn die Vektoren nicht die Dimension 3 haben oder die
             Richtungsvektoren linear abhängig sind.
         """
-        v1 = np.array(v1, dtype=float)
-        v2 = np.array(v2, dtype=float)
+        v1 = Vektor(v1)
+        v2 = Vektor(v2)
 
-        norm_vektor = np.cross(v1, v2)
-        if np.allclose(np.linalg.norm(norm_vektor), 0):
+        norm_vektor = v1.cross(v2)
+        if close(norm_vektor.mod(), 0):
             raise ValueError("Richtungsvektoren sind linear abhängig")
         
         return cls(punkt, norm_vektor)
@@ -103,8 +104,8 @@ class Ebene:
         bool
             True, wenn der Vektor in der Ebene liegt, sonst False.
         """
-        return np.isclose(np.dot(x_vektor, self.norm_vektor), 
-                         np.dot(self.punkt, self.norm_vektor))
+        return close(x_vektor.dot(self.norm_vektor), 
+                         self.punkt.dot(self.norm_vektor))
     
     def enthaelt_punkt(self, p1):
         """
@@ -120,8 +121,8 @@ class Ebene:
         bool
             True, wenn der Punkt in der Ebene liegt, sonst False.
         """
-        if np.isclose(np.dot(p1, self.norm_vektor), 
-                     np.dot(self.punkt, self.norm_vektor)):
+        if close(p1.dot(self.norm_vektor), 
+                     self.punkt.dot(self.norm_vektor)):
             return True
         else:
             return False
@@ -145,7 +146,7 @@ class Ebene:
         str
             Die Lagebeziehung als String: "identisch", "parallel" oder "schneidend".
         """
-        if np.isclose(np.dot(gerade.richtungsvektor, self.norm_vektor), 0):
+        if close(gerade.richtungsvektor.dot(self.norm_vektor), 0):
             if self.enthaelt_punkt(gerade.gerade(0)):
                 return "identisch"
             else:
@@ -172,7 +173,7 @@ class Ebene:
         str
             Die Lagebeziehung als String: "identisch", "parallel" oder "schneidend".
         """
-        if np.allclose(np.cross(self.norm_vektor, E2.norm_vektor), 0):
+        if close(self.norm_vektor.cross(E2.norm_vektor).mod(), 0):
             if self.enthaelt_punkt(E2.punkt):
                 return "identisch"
             else:
@@ -193,13 +194,13 @@ class Ebene:
 
         Returns
         -------
-        numpy.ndarray or None
+        Vektor or None
             Der Schnittpunkt, wenn die Gerade die Ebene schneidet,
             sonst None.
         """
         if self.lage_gerade(g) == "schneidend":
-            zaehler = np.dot(self.norm_vektor, self.punkt - g.stutzvektor)
-            nenner = np.dot(self.norm_vektor, g.richtungsvektor)
+            zaehler = self.norm_vektor.dot(self.punkt - g.stutzvektor)
+            nenner = self.norm_vektor.dot(g.richtungsvektor)
             r = zaehler / nenner
             return g.gerade(r)
         else:
@@ -223,18 +224,25 @@ class Ebene:
             sonst None.
         """
         if self.lage_ebene(E2) == "schneidend":
-            richt_vektor = np.cross(self.norm_vektor, E2.norm_vektor)
+            d1 = self.norm_vektor.dot(self.punkt)
+            d2 = E2.norm_vektor.dot(E2.punkt)
+            d = [d1, d2]
 
-            d1 = np.dot(self.norm_vektor, self.punkt)
-            d2 = np.dot(E2.norm_vektor, E2.punkt)
-            d = np.array([d1, d2])
+            A = [
+                list(self.norm_vektor),
+                list(E2.norm_vektor)
+            ]
 
-            A = np.array([self.norm_vektor, E2.norm_vektor])
+            losung = linsys_solve(A, d)
 
-            stutz_vektor, _, _, _ = np.linalg.lstsq(A, d, rcond=None)
-            schnitt_gerade = Gerade(stutz_vektor, richt_vektor)
+            if losung is None:
+                return None
 
-            return schnitt_gerade
+            stutzvektor = Vektor(*losung)
+            richtungsvektor = self.norm_vektor.cross(E2.norm_vektor)
+
+            return Gerade(stutzvektor, richtungsvektor)
+        
         else:
             return None
 
@@ -259,8 +267,8 @@ class Ebene:
         float
             Der Schnittwinkel in Radiant oder Grad.
         """
-        zaehler = abs(np.dot(self.norm_vektor, g.richtungsvektor))
-        nenner = np.linalg.norm(self.norm_vektor) * np.linalg.norm(g.richtungsvektor)
+        zaehler = abs(self.norm_vektor.dot(g.richtungsvektor))
+        nenner = self.norm_vektor.mod() * g.richtungsvektor.mod()
         los_rad = math.asin(zaehler / nenner)
 
         return math.degrees(los_rad) if deg else los_rad
@@ -285,8 +293,8 @@ class Ebene:
         float
             Der Schnittwinkel in Radiant oder Grad.
         """
-        zaehler = abs(np.dot(self.norm_vektor, E2.norm_vektor))
-        nenner = np.linalg.norm(self.norm_vektor) * np.linalg.norm(E2.norm_vektor)
+        zaehler = abs(self.norm_vektor.dot(E2.norm_vektor))
+        nenner = self.norm_vektor.mod() * E2.norm_vektor.mod()
         los_rad = math.acos(zaehler / nenner)
 
         return math.degrees(los_rad) if deg else los_rad
@@ -311,9 +319,9 @@ class Ebene:
         """
         S = []
         for i in range(3):
-            d = np.dot(self.punkt, self.norm_vektor)
+            d = self.punkt.dot(self.norm_vektor)
             x = [0] * 3
-            if not np.isclose(self.norm_vektor[i], 0):
+            if not close(self.norm_vektor[i], 0):
                 x[i] = d / self.norm_vektor[i]
             else:
                 x[i] = None
@@ -337,9 +345,9 @@ class Ebene:
             liegt, wird 0 zurückgegeben.
         """
         if not self.enthaelt_punkt(punkt):
-            p_array = punkt.punkt if isinstance(punkt, Punkt) else np.array(punkt)
-            zaehler = abs(np.dot(p_array - self.punkt, self.norm_vektor))
-            nenner = np.linalg.norm(self.norm_vektor)
+            p_array = punkt.punkt if isinstance(punkt, Punkt) else Vektor(punkt)
+            zaehler = abs((p_array - self.punkt).dot(self.norm_vektor))
+            nenner = self.norm_vektor.mod()
             d = zaehler / nenner
         
             return d

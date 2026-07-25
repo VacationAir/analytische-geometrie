@@ -1,6 +1,8 @@
-import numpy as np
+from .punkt import Punkt
 from .gerade import Gerade
 from .ebene import Ebene
+from .vektor import Vektor
+from ..utils.linal_utils import close
 
 class Fassade:
 	"""
@@ -25,9 +27,9 @@ class Fassade:
 
 	Attributes
 	----------
-	X1, X2, X3, X4 : numpy.ndarray
+	X1, X2, X3, X4 : Punkt
 		Die vier Eckpunkte der Fassade.
-	punkte : tuple of numpy.ndarray
+	punkte : tuple of Punkt
 		Die vier Eckpunkte als Tupel (X1, X2, X3, X4).
 	kante_X1_X2 : Gerade
 		Die Kante zwischen X1 und X2.
@@ -44,9 +46,9 @@ class Fassade:
 		Die Diagonale von X4 nach X2.
 	d2 : Gerade
 		Die Diagonale von X1 nach X3.
-	mittelpunkt : numpy.ndarray
+	mittelpunkt : Punkt
 		Der Mittelpunkt der Fassade (arithmetisches Mittel der vier Eckpunkte).
-	norm_vektor : numpy.ndarray
+	norm_vektor : Vektor
 		Der Normalenvektor der Fassadenebene.
 	E : Ebene
 		Die Ebene, in der die Fassade liegt.
@@ -67,10 +69,10 @@ class Fassade:
 		X4 : array_like
 			Vierter Eckpunkt der Fassade.
 		"""
-		self.X1 = np.array(X1, dtype=float)
-		self.X2 = np.array(X2, dtype=float)
-		self.X3 = np.array(X3, dtype=float)
-		self.X4 = np.array(X4, dtype=float)
+		self.X1 = Punkt(X1)
+		self.X2 = Punkt(X2)
+		self.X3 = Punkt(X3)
+		self.X4 = Punkt(X4)
 		self.punkte = (
 			self.X1,
 			self.X2,
@@ -92,8 +94,8 @@ class Fassade:
 		self.d1 = Gerade.from_punkte(self.X4, self.X2)
 		self.d2 = Gerade.from_punkte(self.X1, self.X3)
 
-		self.mittelpunkt = (self.X1 + self.X2 + self.X3 +self.X4)/4
-		self.norm_vektor = np.cross(self.kante_X1_X2.richtungsvektor, self.kante_X2_X3.richtungsvektor)
+		self.mittelpunkt = Punkt((self.X1 + self.X2 + self.X3 +self.X4)/4)
+		self.norm_vektor = self.kante_X1_X2.richtungsvektor.cross(self.kante_X2_X3.richtungsvektor)
 		self.E = Ebene(self.X1, self.norm_vektor)
 
 	#--------------------------------------
@@ -113,8 +115,8 @@ class Fassade:
 		float
 			Der Flächeninhalt der Fassade.
 		"""
-		A1 = 0.5 * np.linalg.norm(np.cross(self.kante_X4_X1.richtungsvektor, self.d1.richtungsvektor))
-		A2 = 0.5 * np.linalg.norm(np.cross(self.kante_X2_X3.richtungsvektor, self.d1.richtungsvektor))
+		A1 = 0.5 * (self.kante_X4_X1.richtungsvektor.cross(self.d1.richtungsvektor)).mod()
+		A2 = 0.5 * (self.kante_X2_X3.richtungsvektor.cross(self.d1.richtungsvektor)).mod()
 		
 		return A1 + A2
 	
@@ -129,7 +131,7 @@ class Fassade:
 		float
 			Der Umfang der Fassade.
 		"""
-		U = np.linalg.norm(self.kante_X1_X2.richtungsvektor) + np.linalg.norm(self.kante_X2_X3.richtungsvektor) + np.linalg.norm(self.kante_X3_X4.richtungsvektor) + np.linalg.norm(self.kante_X4_X1.richtungsvektor)
+		U = self.kante_X1_X2.richtungsvektor.mod() + self.kante_X2_X3.richtungsvektor.mod() + self.kante_X3_X4.richtungsvektor.mod() + self.kante_X4_X1.richtungsvektor.mod()
 		
 		return U
 	
@@ -157,7 +159,7 @@ class Fassade:
 		bool
 			True, wenn der Punkt innerhalb der Fassade liegt, sonst False.
 		"""
-		Q = np.array(Q, dtype=float)
+		Q = Punkt(Q)
 		
 		if not self.E.enthaelt_punkt(Q):
 			return False
@@ -180,7 +182,7 @@ class Fassade:
 		L_list = [L, LX2_X3, LX3_X4, LX4_X1]
 		G_list = [self.kante_X1_X2, self.kante_X2_X3, self.kante_X3_X4, self.kante_X4_X1]
 
-		if np.dot(v1, v2) >= 0 or np.dot(v1, v3) >= 0 or np.dot(v1, v4) >= 0:
+		if v1.dot(v2) >= 0 or v1.dot(v3) >= 0 or v1.dot(v4) >= 0:
 			for i in range(len(L_list)):
 				r = G_list[i].quotient_berechnen(L_list[i])
 				if r is None or not (0 <= r <= 1):
@@ -235,7 +237,7 @@ class Fassade:
 		"""
 
 		for K in self.kanten:
-			if np.allclose(K.stutzvektor, Q):
+			if close(K.stutzvektor, Q):
 				return True
 
 		return False
@@ -255,7 +257,7 @@ class Fassade:
 
 		Returns
 		-------
-		Gerade or numpy.ndarray or None
+		Gerade or Punkt or None
 			Das Ergebnis der Schnittberechnung, abhängig von der
 			Lagebeziehung zwischen Fassade und Gerade.
 		"""
@@ -290,7 +292,7 @@ class Fassade:
 
 		Returns
 		-------
-		Gerade or numpy.ndarray or None
+		Gerade or Punkt or None
 			Das Ergebnis der Schnittberechnung, abhängig von der
 			Lagebeziehung zwischen Fassade und Ebene.
 		"""
@@ -324,7 +326,7 @@ class Fassade:
 
 		Returns
 		-------
-		Fassade or numpy.ndarray or Gerade or None
+		Fassade or Punkt or Gerade or None
 			Das Ergebnis der Schnittberechnung, abhängig von der
 			Lagebeziehung zwischen den beiden Fassaden.
 		"""
@@ -380,17 +382,17 @@ class Fassade:
 							r1 = K1.quotient_berechnen(pt)
 							r2 = K2.quotient_berechnen(pt)
 							if r1 is not None and 0 <= r1 <= 1 and r2 is not None and 0 <= r2 <= 1:
-								if not any(np.allclose(pt, e) for e in P):
+								if not any(close(pt, e) for e in P):
 									P.append(pt)
 
 				# 2. Eckpunkte von F1 hinzufügen, die innerhalb von F2 liegen
 				for P1 in self.punkte:
-					if F2.enthaelt_punkt(P1) and not any(np.allclose(P1, e) for e in P):
+					if F2.enthaelt_punkt(P1) and not any(close(P1, e) for e in P):
 						P.append(P1)
 
 				# 3. Eckpunkte von F2 hinzufügen, die innerhalb von F1 liegen
 				for P2 in F2.punkte:
-					if self.enthaelt_punkt(P2) and not any(np.allclose(P2, e) for e in P):
+					if self.enthaelt_punkt(P2) and not any(close(P2, e) for e in P):
 						P.append(P2)
 
 				if len(P) >= 4:
@@ -422,7 +424,7 @@ class Fassade:
 		float
 			Der Abstand des Punkts zur Fassade.
 		"""
-		Q = np.array(Q, dtype=float)
+		Q = Vektor(Q)
 		
 		EQ = Gerade(Q, self.E.norm_vektor)
 		L = self.E.schnittpunkt_gerade(EQ)
@@ -430,7 +432,7 @@ class Fassade:
 
 		if L is not None and self.enthaelt_punkt(L):
 				LQ = Q - L
-				d = np.linalg.norm(LQ)
+				d = LQ.mod()
 				return d
 		else:
 			D = [
@@ -559,7 +561,7 @@ class Fassade:
 					r = K.quotient_berechnen(L)
 
 					if r is not None and 0 <= r <= 1:
-						D.append(np.linalg.norm(P - L))
+						D.append((P - L).mod())
 
 			# 2. Abstand jedes Eckpunkts von F2 zu jeder begrenzten Kante von F1
 			for P in F2.punkte:
@@ -568,7 +570,7 @@ class Fassade:
 					r = K.quotient_berechnen(L)
 
 					if r is not None and 0 <= r <= 1:
-						D.append(np.linalg.norm(P - L))
+						D.append((P - L).mod())
 						
 			return min(D) if D else 0.0
 
@@ -627,7 +629,7 @@ class Fassade:
 				S = G.schnitt_mit_gerade(K)
 				r = K.quotient_berechnen(S)
 				if r is not None and 0 <= r <= 1:
-					if not any(np.allclose(S,P) for P in punkte):
+					if not any(close(S,P) for P in punkte):
 						punkte.append(S)
 
 		n = len(punkte)
@@ -730,7 +732,7 @@ class Fassade:
 
 		lage = self.E.lage_ebene(F2.E)
  
-		if all(np.allclose(P1,P2) for P1,P2 in zip(self.punkte,F2.punkte)):
+		if all(close(P1,P2) for P1,P2 in zip(self.punkte,F2.punkte)):
 			return "identisch"
 		
 		elif lage == "parallel":
@@ -741,13 +743,15 @@ class Fassade:
  
 			lage_in_F1 = self.lage_gerade(gS)
 			lage_in_F2 = F2.lage_gerade(gS)
+
+			print(gS)
 			if lage_in_F1 == "schneidend" and lage_in_F2 == "schneidend":
 				return "schneidend"
 			else:
 				return "ausserhalb"
 		
 		elif lage == "identisch":
-			if all(any(np.allclose(P1, P2) for P2 in F2.punkte) for P1 in self.punkte):
+			if all(any(close(P1, P2) for P2 in F2.punkte) for P1 in self.punkte):
 				return "identisch"
  
 			strenge_schnittpunkte = []
@@ -763,7 +767,7 @@ class Fassade:
 						r1 = K1.quotient_berechnen(S)
 						r2 = K2.quotient_berechnen(S)
 						if r1 is not None and 0 <= r1 <= 1 and r2 is not None and 0 <= r2 <= 1:
-							if not any(np.allclose(S, p) for p in strenge_schnittpunkte):
+							if not any(close(S, p) for p in strenge_schnittpunkte):
 								strenge_schnittpunkte.append(S)
 					elif lg == "identisch":
 						# Prüfen, ob sich die Kantensegmente tatsächlich einen gemeinsamen Bereich teilen,
@@ -778,7 +782,7 @@ class Fassade:
  
 			# Exakt gemeinsame Ecken zählen
 			for P1 in self.punkte:
-				if any(np.allclose(P1, P2) for P2 in F2.punkte):
+				if any(close(P1, P2) for P2 in F2.punkte):
 					gemeinsame_ecken += 1
  
 			anzahl_schnittpunkte = len(strenge_schnittpunkte)
@@ -816,6 +820,6 @@ class Fassade:
 		Returns
 		-------
 		str
-			Eine String-Repräsentation der Ebene.
+			Eine String-Repräsentation der Fassade.
 		"""
-		return f"Fassade(punkt={self.punkt}, norm={self.norm_vektor})"
+		return f"Fassade(Punkte={self.punkte}, Kanten = {self.kanten}, norm={self.norm_vektor})"

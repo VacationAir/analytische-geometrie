@@ -1,5 +1,6 @@
-import numpy as np
 import math 
+from .vektor import Vektor
+from ..utils.linal_utils import linsys_solve, close
 
 class Gerade:
     """
@@ -17,9 +18,9 @@ class Gerade:
 
     Attributes
     ----------
-    stutzvektor : numpy.ndarray
+    stutzvektor : Vektor
         Der Stützvektor der Geraden.
-    richtungsvektor : numpy.ndarray
+    richtungsvektor : Vektor
         Der Richtungsvektor der Geraden.
     """
 
@@ -40,8 +41,8 @@ class Gerade:
             Wenn die Vektoren nicht die Dimension 3 haben oder der
             Richtungsvektor der Nullvektor ist.
         """
-        self.stutzvektor = np.array(stutzvektor)
-        self.richtungsvektor = np.array(richtungsvektor)
+        self.stutzvektor = Vektor(stutzvektor)
+        self.richtungsvektor = Vektor(richtungsvektor)
 
     @classmethod
     def from_punkte(cls, punkt1, punkt2):
@@ -68,8 +69,8 @@ class Gerade:
         ValueError
             Wenn die Punkte nicht die Dimension 3 haben oder identisch sind.
         """
-        p1 = np.array(punkt1)
-        p2 = np.array(punkt2)
+        p1 = Vektor(punkt1)
+        p2 = Vektor(punkt2)
         return cls(p1, p2 - p1)
     
     def gerade(self, r):
@@ -85,8 +86,8 @@ class Gerade:
 
         Returns
         -------
-        numpy.ndarray
-            Der Ortsvektor des Punkts auf der Geraden.
+        Vektor
+            Der Punkt auf der Geraden.
         """
         return self.stutzvektor + r * self.richtungsvektor
 
@@ -108,12 +109,12 @@ class Gerade:
             Der Parameter r, wenn der Punkt auf der Geraden liegt,
             sonst None.
         """
-        punkt = np.array(punkt, dtype=float)
+        punkt = Vektor(punkt)
         losungen_r = []
 
         for i in range(3):
-            if np.allclose(self.richtungsvektor[i], 0):
-                if not np.allclose(punkt[i], self.stutzvektor[i]):
+            if close(self.richtungsvektor[i], 0):
+                if not close(punkt[i], self.stutzvektor[i]):
                     return None
             else:
                 r = (punkt[i] - self.stutzvektor[i]) / self.richtungsvektor[i]
@@ -122,7 +123,7 @@ class Gerade:
         if len(losungen_r) == 0:
             return 0.0
 
-        if np.allclose(losungen_r, losungen_r[0]):
+        if close(losungen_r, losungen_r[0]):
             return losungen_r[0]
 
         return None
@@ -168,9 +169,9 @@ class Gerade:
             Der Abstand des Punkts zur Geraden.
         """
         vektor_pq = q - self.stutzvektor
-        kreuzprodukt = np.cross(vektor_pq, self.richtungsvektor)
-        zaehler = np.linalg.norm(kreuzprodukt)
-        nenner  = np.linalg.norm(self.richtungsvektor)
+        kreuzprodukt = vektor_pq.cross(self.richtungsvektor)
+        zaehler = kreuzprodukt.mod()
+        nenner  = self.richtungsvektor.mod()
         return zaehler/nenner
 
     def abstand_zu_gerade(self, g2):
@@ -194,11 +195,11 @@ class Gerade:
         if self.lage_gerade(g2) == "windschief":
             vektor_pq = g2.stutzvektor - self.stutzvektor
 
-            normalvektor = np.cross(self.richtungsvektor, g2.richtungsvektor)
-            skalar_produkt = np.dot(vektor_pq, normalvektor)
+            normalvektor = self.richtungsvektor.cross(g2.richtungsvektor)
+            skalar_produkt = vektor_pq.dot(normalvektor)
 
             zaehler = abs(skalar_produkt)
-            nenner = np.linalg.norm(normalvektor)
+            nenner = normalvektor.mod()
             abstand = zaehler/nenner
 
             return abstand
@@ -211,11 +212,11 @@ class Gerade:
 
     def lotfusspunkt(self, Q):
         AQ = Q- self.stutzvektor
-        r = np.dot(AQ, self.richtungsvektor)/ np.dot(self.richtungsvektor, self.richtungsvektor)
+        r = AQ.dot(self.richtungsvektor)/ self.richtungsvektor.dot(self.richtungsvektor)
         
         return self.gerade(r)
     
-    def schnitt_mit_gerade(self, g2):
+    def schnitt_mit_gerade(self, g2: "Gerade"):
         """
         Berechnet den Schnittpunkt dieser Geraden mit einer anderen Geraden.
 
@@ -228,18 +229,26 @@ class Gerade:
 
         Returns
         -------
-        numpy.ndarray or None
+        Vektor or None
             Der Schnittpunkt, wenn die Geraden sich schneiden,
             sonst None.
         """
         if self.lage_gerade(g2) == "schneidend":
-            A = np.column_stack([self.richtungsvektor, -g2.richtungsvektor])
+            A = [
+                [self.richtungsvektor[0], -g2.richtungsvektor[0]],
+                [self.richtungsvektor[1], -g2.richtungsvektor[1]],
+                [self.richtungsvektor[2], -g2.richtungsvektor[2]]
+            ]
+
             b = g2.stutzvektor - self.stutzvektor
 
-            losung, _, _, _ = np.linalg.lstsq(A, b, rcond=None)
-            r = losung[0]
-            return self.gerade(r)
+            losung = linsys_solve(A, b)
 
+            if losung is None:
+                return None
+            
+            return self.gerade(losung[0])
+        
         else:
             return None
         
@@ -263,8 +272,8 @@ class Gerade:
         float
             Der Winkel zwischen den Geraden in Radiant oder Grad.
         """
-        zaehler = abs(np.dot(self.richtungsvektor, g2.richtungsvektor))
-        nenner = np.linalg.norm(self.richtungsvektor) * np.linalg.norm(g2.richtungsvektor)
+        zaehler = abs(self.richtungsvektor.dot(g2.richtungsvektor))
+        nenner = self.richtungsvektor.mod() * g2.richtungsvektor.mod()
         result_in_radians = math.acos(zaehler/nenner)
         if deg:
             return math.degrees(result_in_radians)
@@ -292,7 +301,7 @@ class Gerade:
             "schneidend" oder "windschief".
         """
         # Zuerst kolinear oder nicht
-        kolinear = np.allclose(np.cross(self.richtungsvektor, g2.richtungsvektor),0)
+        kolinear = close(self.richtungsvektor.cross(g2.richtungsvektor),0)
         if kolinear:
             if self.enthaelt_punkt(g2.stutzvektor):
                 return "identisch"
@@ -300,10 +309,11 @@ class Gerade:
                 return "parallel"
         else:
             pq = g2.stutzvektor - self.stutzvektor
-            n = np.cross(self.richtungsvektor, g2.richtungsvektor)
-            abstand = abs(np.dot(pq, n)/np.linalg.norm(n))
-            if np.isclose(abstand, 0):
+            n = self.richtungsvektor.cross(g2.richtungsvektor)
+            abstand = abs(pq.dot(n)/n.mod())
+            if close(abstand, 0):
                 return "schneidend"
+            
             else:
                 return "windschief"
 
@@ -323,7 +333,7 @@ class Gerade:
         -------
         list
             Eine Liste mit drei Einträgen [S1, S2, S3], wobei jeder Eintrag
-            ein Punkt (numpy.ndarray) oder None ist.
+            ein Punkt (Vektor) oder None ist.
         """
         S = []
         for i in range(3):

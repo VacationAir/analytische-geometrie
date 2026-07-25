@@ -1,20 +1,22 @@
-import numpy as np
-from analytische_geometrie.ebene import Ebene
-from analytische_geometrie.gerade import Gerade
-from analytische_geometrie.punkt import Punkt
+import random
+from analytische_geometrie.geometrie.ebene import Ebene
+from analytische_geometrie.geometrie.gerade import Gerade
+from analytische_geometrie.geometrie.punkt import Punkt
+from analytische_geometrie.geometrie.vektor import Vektor
+from analytische_geometrie.utils.linal_utils import close
 
 class TestEbene:
 
     def test_creation(self):
         """Testet die Erstellung einer Ebene"""
         E = Ebene([0, 0, 0], [1, 1, 1])
-        assert np.array_equal(E.punkt, [0, 0, 0])
-        assert np.array_equal(E.norm_vektor, [1, 1, 1])
+        assert E.punkt == Vektor(0, 0, 0)
+        assert E.norm_vektor == Vektor(1, 1, 1)
         
     def test_from_parameterform(self):
         """Testet die Erstellung aus Parameterform"""
         E = Ebene.from_parameterform([1, 0, 0], [0, 1, 0], [0, 0, 1])
-        assert np.array_equal(E.norm_vektor, [1, 0, 0])
+        assert E.norm_vektor == Vektor(1, 0, 0)
         
     def test_enthaelt_punkt_true(self):
         """Testet ob Punkt in Ebene liegt (wahr)"""
@@ -51,8 +53,8 @@ class TestEbene:
         E = Ebene([0, 0, 0], [1, 0, 0])
         g = Gerade([-1, 1, 1], [1, 0, 0])
         schnitt = E.schnittpunkt_gerade(g)
-        assert np.array_equal(schnitt, [0, 1, 1])
-        
+        assert schnitt == Vektor(0, 1, 1)
+
     def test_lage_ebene_identisch(self):
         """Testet identische Ebenen"""
         E1 = Ebene([0, 0, 0], [1, 0, 0])
@@ -75,7 +77,7 @@ class TestEbene:
         """Testet den Winkel zwischen Ebenen"""
         E1 = Ebene([0, 0, 0], [1, 0, 0])
         E2 = Ebene([0, 0, 0], [0, 1, 0])
-        assert np.isclose(E1.schnittwinkel_ebene(E2, deg=True), 90.0)
+        assert close(E1.schnittwinkel_ebene(E2, deg=True), 90.0)
         
     def test_abstand_punkt(self):
         """Testet den Abstand Punkt-Ebene"""
@@ -101,7 +103,7 @@ class TestEbene:
         spur = E.spurpunkte()
         for s in spur:
             if s[0] is not None:
-                assert np.isclose(s[0], 0)
+                assert close(s[0], 0)
 
     def test_huge_numbers(self):
         E = Ebene(
@@ -109,26 +111,35 @@ class TestEbene:
             [1e150, -1e150, 1e150]
         )
 
-        p = np.array([1e150, 1e150, 1e150])
+        p = Vektor(1e150, 1e150, 1e150)
 
         assert E.enthaelt_punkt(p)
 
     def test_random_intersections(self):
-
-        rng = np.random.default_rng(42)
+        random.seed(42)
 
         for _ in range(10000):
 
-            p = rng.normal(size=3)
-            n = rng.normal(size=3)
+            p = Vektor(
+                random.gauss(0, 1),
+                random.gauss(0, 1),
+                random.gauss(0, 1)
+            )
 
-            E = Ebene(p,n)
+            n = Vektor(
+                random.gauss(0, 1),
+                random.gauss(0, 1),
+                random.gauss(0, 1)
+            )
 
-            q = p + rng.normal(size=3)
+            E = Ebene(p, n)
 
-            q = q - (
-                np.dot(q-p,n)
-                / np.dot(n,n)
-            ) * n
+            q = p + Vektor(
+                random.gauss(0, 1),
+                random.gauss(0, 1),
+                random.gauss(0, 1)
+            )
+
+            q = q - ((q - p).dot(n) / n.dot(n)) * n
 
             assert E.enthaelt_punkt(q)

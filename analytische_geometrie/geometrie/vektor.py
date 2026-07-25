@@ -1,7 +1,6 @@
-# vector_utils.py
 import math
 
-class Vector(tuple):
+class Vektor(tuple):
     """
 
     """
@@ -20,22 +19,25 @@ class Vector(tuple):
 
     # Operaciones básicas
     def __add__(self, other):
-        return Vector(self[0] + other[0], self[1] + other[1], self[2] + other[2])
+        return Vektor(self[0] + other[0], self[1] + other[1], self[2] + other[2])
 
     def __sub__(self, other):
-        return Vector(self[0] - other[0], self[1] - other[1], self[2] - other[2])
+        return Vektor(self[0] - other[0], self[1] - other[1], self[2] - other[2])
 
     def __mul__(self, scalar):
-        return Vector(self[0] * scalar, self[1] * scalar, self[2] * scalar)
+        return Vektor(self[0] * scalar, self[1] * scalar, self[2] * scalar)
 
     def __rmul__(self, scalar):
         return self.__mul__(scalar)
 
     def __truediv__(self, scalar):
-        return Vector(self[0] / scalar, self[1] / scalar, self[2] / scalar)
+        return Vektor(self[0] / scalar, self[1] / scalar, self[2] / scalar)
 
     def __neg__(self):
-        return Vector(-self[0], -self[1], -self[2])
+        return Vektor(-self[0], -self[1], -self[2])
+    
+    def __abs__(self):
+        return math.sqrt(self[0]**2 + self[1]**2 + self[2]**2)
 
     def dot(self, other):
         """Skalarprodukt (Dot Product)"""
@@ -43,7 +45,7 @@ class Vector(tuple):
 
     def cross(self, other):
         """Kreuzprodukt (Cross Product)"""
-        return Vector(
+        return Vektor(
             self[1] * other[2] - self[2] * other[1],
             self[2] * other[0] - self[0] * other[2],
             self[0] * other[1] - self[1] * other[0]
@@ -52,5 +54,3 @@ class Vector(tuple):
     def mod(self):
         return abs(self)
 
-def is_close(a, b, tol=1e-8):
-    return abs(a - b) < tol

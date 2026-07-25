@@ -4,3 +4,4 @@ from .gerade import Gerade
 from .ebene import Ebene
 from .fassade import Fassade
 from .wuerfel import Wuerfel
+from .vektor import Vektor

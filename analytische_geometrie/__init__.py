@@ -1,6 +1,9 @@
-# analytische_geometrie/__init__.py
-from .geometrie import Punkt, Gerade, Ebene, Fassade, Wuerfel
-from .utils.vector_utils import Vector
+from .geometrie.ebene import Ebene
+from .geometrie.gerade import Gerade
+from .geometrie.punkt import Punkt
+from .geometrie.fassade import Fassade
+from .geometrie.wuerfel import Wuerfel
+from .geometrie.vektor import Vektor
 
 __all__ = [
     "Punkt",
@@ -8,5 +11,5 @@ __all__ = [
     "Ebene",
     "Fassade",
     "Wuerfel",
-    "Vector",
+    "Vektor",
 ]
