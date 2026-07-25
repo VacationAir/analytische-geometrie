@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/logo.jpg" width="700" alt="analytische-geometrie Logo">
+  <img src="assets/logo.jpg" width="600" alt="analytische-geometrie Logo">
 </p>
 
 <p align="center">
