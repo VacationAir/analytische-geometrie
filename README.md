@@ -1,3 +1,16 @@
+<p align="center">
+  <img src="assets/logo.jpg" width="700" alt="analytische-geometrie Logo">
+</p>
+
+<p align="center">
+
+![Python](https://img.shields.io/badge/python-3.10+-blue.svg)
+![License](https://img.shields.io/github/license/VacationAir/analytische-geometrie)
+![Tests](https://img.shields.io/badge/tests-83-success)
+![NumPy](https://img.shields.io/badge/dependency-NumPy-blue)
+
+</p>
+
 # Analytische Geometrie
 
 **Analytische Geometrie** ist eine Python-Bibliothek für Berechnungen der analytischen Geometrie im dreidimensionalen Raum. Sie bietet eine einfache und konsistente API für Punkte, Geraden, Ebenen und ebene Vierecke (*Fassaden*) sowie umfangreiche Funktionen zur Bestimmung von Abständen, Schnittpunkten und Lagebeziehungen.
