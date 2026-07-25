@@ -23,6 +23,9 @@ class Gerade:
     richtungsvektor : Vektor
         Der Richtungsvektor der Geraden.
     """
+    # ======================================================================
+    # Konstruktor
+    # ======================================================================
 
     def __init__(self, stutzvektor, richtungsvektor):
         """
@@ -73,6 +76,10 @@ class Gerade:
         p2 = Vektor(punkt2)
         return cls(p1, p2 - p1)
     
+    # ======================================================================
+    # Grundlegende Operationen
+    # ======================================================================
+
     def gerade(self, r):
         """
         Berechnet den Punkt auf der Geraden für einen gegebenen Parameter r.
@@ -147,9 +154,124 @@ class Gerade:
         else:
             return False
         
-    #--------------------------------------
-    #               Abstände
-    #--------------------------------------
+    def lotfusspunkt(self, Q):
+        AQ = Q- self.stutzvektor
+        r = AQ.dot(self.richtungsvektor)/ self.richtungsvektor.dot(self.richtungsvektor)
+        
+        return self.gerade(r)
+    
+    # ======================================================================
+    # Lagebeziehungen
+    # ======================================================================
+    
+    def lage_gerade(self, g2):
+        """
+        Bestimmt die Lagebeziehung dieser Geraden zu einer anderen Geraden.
+
+        Die möglichen Lagebeziehungen sind:
+        - "identisch": Die Geraden sind identisch.
+        - "parallel": Die Geraden sind parallel, aber nicht identisch.
+        - "schneidend": Die Geraden schneiden sich in einem Punkt.
+        - "windschief": Die Geraden sind windschief (nicht parallel, nicht schneidend).
+
+        Parameters
+        ----------
+        g2 : Gerade
+            Die zweite Gerade.
+
+        Returns
+        -------
+        str
+            Die Lagebeziehung als String: "identisch", "parallel",
+            "schneidend" oder "windschief".
+        """
+        # Zuerst kolinear oder nicht
+        kolinear = close(self.richtungsvektor.cross(g2.richtungsvektor),0)
+        if kolinear:
+            if self.enthaelt_punkt(g2.stutzvektor):
+                return "identisch"
+            else:
+                return "parallel"
+        else:
+            pq = g2.stutzvektor - self.stutzvektor
+            n = self.richtungsvektor.cross(g2.richtungsvektor)
+            abstand = abs(pq.dot(n)/n.mod())
+            if close(abstand, 0):
+                return "schneidend"
+            
+            else:
+                return "windschief"
+            
+    # ======================================================================
+    # Schnittberechnungen
+    # ======================================================================
+
+    def schnitt_mit_gerade(self, g2: "Gerade"):
+        """
+        Berechnet den Schnittpunkt dieser Geraden mit einer anderen Geraden.
+
+        Der Schnittpunkt wird nur für sich schneidende Geraden berechnet.
+
+        Parameters
+        ----------
+        g2 : Gerade
+            Die zweite Gerade.
+
+        Returns
+        -------
+        Vektor or None
+            Der Schnittpunkt, wenn die Geraden sich schneiden,
+            sonst None.
+        """
+        if self.lage_gerade(g2) == "schneidend":
+            A = [
+                [self.richtungsvektor[0], -g2.richtungsvektor[0]],
+                [self.richtungsvektor[1], -g2.richtungsvektor[1]],
+                [self.richtungsvektor[2], -g2.richtungsvektor[2]]
+            ]
+
+            b = g2.stutzvektor - self.stutzvektor
+
+            losung = linsys_solve(A, b)
+
+            if losung is None:
+                return None
+            
+            return self.gerade(losung[0])
+        
+        else:
+            return None
+        
+    def spurpunkte_gerade(self):
+        """
+        Berechnet die Spurpunkte der Geraden.
+
+        Spurpunkte sind die Schnittpunkte der Geraden mit den Koordinatenebenen:
+        - S1: Schnitt mit der x1-Achse (x2 = 0, x3 = 0)
+        - S2: Schnitt mit der x2-Achse (x1 = 0, x3 = 0)
+        - S3: Schnitt mit der x3-Achse (x1 = 0, x2 = 0)
+
+        Wenn die Gerade parallel zu einer Achse ist, wird an dieser Stelle
+        None zurückgegeben.
+
+        Returns
+        -------
+        list
+            Eine Liste mit drei Einträgen [S1, S2, S3], wobei jeder Eintrag
+            ein Punkt (Vektor) oder None ist.
+        """
+        S = []
+        for i in range(3):
+            if self.richtungsvektor[i] != 0:
+                r = -self.stutzvektor[i]/self.richtungsvektor[i]
+                S.append(self.gerade(r))
+            else:
+                S.append(None)
+        return S
+
+    # ======================================================================
+    # Abstandsberechnungen
+    # ======================================================================
 
     def abstand_zu_punkt(self, q):
         """
@@ -205,52 +327,11 @@ class Gerade:
             return abstand
         else:
             return None
+
+    # ======================================================================
+    # Winkelberechnungen
+    # ======================================================================
     
-    #--------------------------------------
-    #               Lage
-    #--------------------------------------
-
-    def lotfusspunkt(self, Q):
-        AQ = Q- self.stutzvektor
-        r = AQ.dot(self.richtungsvektor)/ self.richtungsvektor.dot(self.richtungsvektor)
-        
-        return self.gerade(r)
-    
-    def schnitt_mit_gerade(self, g2: "Gerade"):
-        """
-        Berechnet den Schnittpunkt dieser Geraden mit einer anderen Geraden.
-
-        Der Schnittpunkt wird nur für sich schneidende Geraden berechnet.
-
-        Parameters
-        ----------
-        g2 : Gerade
-            Die zweite Gerade.
-
-        Returns
-        -------
-        Vektor or None
-            Der Schnittpunkt, wenn die Geraden sich schneiden,
-            sonst None.
-        """
-        if self.lage_gerade(g2) == "schneidend":
-            A = [
-                [self.richtungsvektor[0], -g2.richtungsvektor[0]],
-                [self.richtungsvektor[1], -g2.richtungsvektor[1]],
-                [self.richtungsvektor[2], -g2.richtungsvektor[2]]
-            ]
-
-            b = g2.stutzvektor - self.stutzvektor
-
-            losung = linsys_solve(A, b)
-
-            if losung is None:
-                return None
-            
-            return self.gerade(losung[0])
-        
-        else:
-            return None
         
     def winkel_zwei_geraden(self, g2, deg=None):
         """
@@ -279,71 +360,13 @@ class Gerade:
             return math.degrees(result_in_radians)
         return result_in_radians
 
-    def lage_gerade(self, g2):
-        """
-        Bestimmt die Lagebeziehung dieser Geraden zu einer anderen Geraden.
+    # ======================================================================
+    # Transformationen
+    # ======================================================================
 
-        Die möglichen Lagebeziehungen sind:
-        - "identisch": Die Geraden sind identisch.
-        - "parallel": Die Geraden sind parallel, aber nicht identisch.
-        - "schneidend": Die Geraden schneiden sich in einem Punkt.
-        - "windschief": Die Geraden sind windschief (nicht parallel, nicht schneidend).
+    def skalieren(self, faktor):
+        pass
 
-        Parameters
-        ----------
-        g2 : Gerade
-            Die zweite Gerade.
-
-        Returns
-        -------
-        str
-            Die Lagebeziehung als String: "identisch", "parallel",
-            "schneidend" oder "windschief".
-        """
-        # Zuerst kolinear oder nicht
-        kolinear = close(self.richtungsvektor.cross(g2.richtungsvektor),0)
-        if kolinear:
-            if self.enthaelt_punkt(g2.stutzvektor):
-                return "identisch"
-            else:
-                return "parallel"
-        else:
-            pq = g2.stutzvektor - self.stutzvektor
-            n = self.richtungsvektor.cross(g2.richtungsvektor)
-            abstand = abs(pq.dot(n)/n.mod())
-            if close(abstand, 0):
-                return "schneidend"
-            
-            else:
-                return "windschief"
-
-    def spurpunkte_gerade(self):
-        """
-        Berechnet die Spurpunkte der Geraden.
-
-        Spurpunkte sind die Schnittpunkte der Geraden mit den Koordinatenebenen:
-        - S1: Schnitt mit der x1-Achse (x2 = 0, x3 = 0)
-        - S2: Schnitt mit der x2-Achse (x1 = 0, x3 = 0)
-        - S3: Schnitt mit der x3-Achse (x1 = 0, x2 = 0)
-
-        Wenn die Gerade parallel zu einer Achse ist, wird an dieser Stelle
-        None zurückgegeben.
-
-        Returns
-        -------
-        list
-            Eine Liste mit drei Einträgen [S1, S2, S3], wobei jeder Eintrag
-            ein Punkt (Vektor) oder None ist.
-        """
-        S = []
-        for i in range(3):
-            if self.richtungsvektor[i] != 0:
-                r = -self.stutzvektor[i]/self.richtungsvektor[i]
-                S.append(self.gerade(r))
-            else:
-                S.append(None)
-        return S
-    
     def __repr__(self):
         """
         Gibt eine lesbare String-Repräsentation der Geraden zurück.

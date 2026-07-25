@@ -25,6 +25,9 @@ class Ebene:
     norm_vektor : Vektor
         Der Normalenvektor der Ebene.
     """
+    # ======================================================================
+    # Konstruktoren
+    # ======================================================================
 
     def __init__(self, punkt, norm_vektor):
         """
@@ -88,6 +91,10 @@ class Ebene:
         
         return cls(punkt, norm_vektor)
     
+    # ======================================================================
+    # Grundlegende Operationen
+    # ======================================================================
+
     def ebene(self, x_vektor):
         """
         Prüft, ob ein gegebener Vektor die Ebenengleichung erfüllt.
@@ -126,6 +133,10 @@ class Ebene:
             return True
         else:
             return False
+        
+    # ======================================================================
+    # Lagebeziehungen
+    # ======================================================================
 
     def lage_gerade(self, gerade):
         """
@@ -180,6 +191,40 @@ class Ebene:
                 return "parallel"
         else:
             return "schneidend"
+        
+    def spurpunkte(self):
+        """
+        Berechnet die Spurpunkte der Ebene.
+
+        Spurpunkte sind die Schnittpunkte der Ebene mit den Koordinatenachsen:
+        - S1: Schnitt mit der x1-Achse (x2 = 0, x3 = 0)
+        - S2: Schnitt mit der x2-Achse (x1 = 0, x3 = 0)
+        - S3: Schnitt mit der x3-Achse (x1 = 0, x2 = 0)
+
+        Wenn die Ebene parallel zu einer Achse ist, wird an dieser Stelle
+        None zurückgegeben.
+
+        Returns
+        -------
+        list
+            Eine Liste mit drei Einträgen [S1, S2, S3], wobei jeder Eintrag
+            ein Punkt (Liste) oder None ist.
+        """
+        S = []
+        for i in range(3):
+            d = self.punkt.dot(self.norm_vektor)
+            x = [0] * 3
+            if not close(self.norm_vektor[i], 0):
+                x[i] = d / self.norm_vektor[i]
+            else:
+                x[i] = None
+
+            S.append(x)
+        return S
+    
+    # ======================================================================
+    # Schnittberechnungen
+    # ======================================================================
 
     def schnittpunkt_gerade(self, g: Gerade):
         """
@@ -246,88 +291,9 @@ class Ebene:
         else:
             return None
 
-    def schnittwinkel_gerade(self, g: Gerade, deg=None):
-        """
-        Berechnet den Schnittwinkel zwischen einer Geraden und dieser Ebene.
-
-        Der Winkel wird aus dem Sinus des Winkels zwischen dem Normalenvektor
-        der Ebene und dem Richtungsvektor der Geraden berechnet.
-
-        Parameters
-        ----------
-        g : Gerade
-            Die Gerade.
-        deg : bool, optional
-            Wenn True, wird der Winkel in Grad zurückgegeben.
-            Wenn False oder None, wird der Winkel in Radiant zurückgegeben.
-            Standard ist None (Radiant).
-
-        Returns
-        -------
-        float
-            Der Schnittwinkel in Radiant oder Grad.
-        """
-        zaehler = abs(self.norm_vektor.dot(g.richtungsvektor))
-        nenner = self.norm_vektor.mod() * g.richtungsvektor.mod()
-        los_rad = math.asin(zaehler / nenner)
-
-        return math.degrees(los_rad) if deg else los_rad
-    
-    def schnittwinkel_ebene(self, E2, deg=None):
-        """
-        Berechnet den Schnittwinkel zwischen dieser Ebene und einer anderen Ebene.
-
-        Der Winkel wird aus dem Skalarprodukt der Normalenvektoren berechnet.
-
-        Parameters
-        ----------
-        E2 : Ebene
-            Die zweite Ebene.
-        deg : bool, optional
-            Wenn True, wird der Winkel in Grad zurückgegeben.
-            Wenn False oder None, wird der Winkel in Radiant zurückgegeben.
-            Standard ist None (Radiant).
-
-        Returns
-        -------
-        float
-            Der Schnittwinkel in Radiant oder Grad.
-        """
-        zaehler = abs(self.norm_vektor.dot(E2.norm_vektor))
-        nenner = self.norm_vektor.mod() * E2.norm_vektor.mod()
-        los_rad = math.acos(zaehler / nenner)
-
-        return math.degrees(los_rad) if deg else los_rad
-    
-    def spurpunkte(self):
-        """
-        Berechnet die Spurpunkte der Ebene.
-
-        Spurpunkte sind die Schnittpunkte der Ebene mit den Koordinatenachsen:
-        - S1: Schnitt mit der x1-Achse (x2 = 0, x3 = 0)
-        - S2: Schnitt mit der x2-Achse (x1 = 0, x3 = 0)
-        - S3: Schnitt mit der x3-Achse (x1 = 0, x2 = 0)
-
-        Wenn die Ebene parallel zu einer Achse ist, wird an dieser Stelle
-        None zurückgegeben.
-
-        Returns
-        -------
-        list
-            Eine Liste mit drei Einträgen [S1, S2, S3], wobei jeder Eintrag
-            ein Punkt (Liste) oder None ist.
-        """
-        S = []
-        for i in range(3):
-            d = self.punkt.dot(self.norm_vektor)
-            x = [0] * 3
-            if not close(self.norm_vektor[i], 0):
-                x[i] = d / self.norm_vektor[i]
-            else:
-                x[i] = None
-
-            S.append(x)
-        return S
+    # ======================================================================
+    # Abstandsberechnungen
+    # ======================================================================
 
     def abstand_punkt(self, punkt: Punkt):
         """
@@ -398,6 +364,67 @@ class Ebene:
             return self.abstand_punkt(E2.punkt)
         else:
             return None
+  
+    # ======================================================================
+    # Winkelberechnungen
+    # ======================================================================
+
+    def schnittwinkel_gerade(self, g: Gerade, deg=None):
+        """
+        Berechnet den Schnittwinkel zwischen einer Geraden und dieser Ebene.
+
+        Der Winkel wird aus dem Sinus des Winkels zwischen dem Normalenvektor
+        der Ebene und dem Richtungsvektor der Geraden berechnet.
+
+        Parameters
+        ----------
+        g : Gerade
+            Die Gerade.
+        deg : bool, optional
+            Wenn True, wird der Winkel in Grad zurückgegeben.
+            Wenn False oder None, wird der Winkel in Radiant zurückgegeben.
+            Standard ist None (Radiant).
+
+        Returns
+        -------
+        float
+            Der Schnittwinkel in Radiant oder Grad.
+        """
+        zaehler = abs(self.norm_vektor.dot(g.richtungsvektor))
+        nenner = self.norm_vektor.mod() * g.richtungsvektor.mod()
+        los_rad = math.asin(zaehler / nenner)
+
+        return math.degrees(los_rad) if deg else los_rad
+    
+    def schnittwinkel_ebene(self, E2, deg=None):
+        """
+        Berechnet den Schnittwinkel zwischen dieser Ebene und einer anderen Ebene.
+
+        Der Winkel wird aus dem Skalarprodukt der Normalenvektoren berechnet.
+
+        Parameters
+        ----------
+        E2 : Ebene
+            Die zweite Ebene.
+        deg : bool, optional
+            Wenn True, wird der Winkel in Grad zurückgegeben.
+            Wenn False oder None, wird der Winkel in Radiant zurückgegeben.
+            Standard ist None (Radiant).
+
+        Returns
+        -------
+        float
+            Der Schnittwinkel in Radiant oder Grad.
+        """
+        zaehler = abs(self.norm_vektor.dot(E2.norm_vektor))
+        nenner = self.norm_vektor.mod() * E2.norm_vektor.mod()
+        los_rad = math.acos(zaehler / nenner)
+
+        return math.degrees(los_rad) if deg else los_rad
+    
+    # ======================================================================
+    # Transformationen
+    # ======================================================================
 
     def __repr__(self):
         """

@@ -6,6 +6,11 @@ from .fassade import Fassade
 from .vektor import Vektor
 
 class Wuerfel:
+
+    # ======================================================================
+    # Konstruktoren
+    # ======================================================================
+
     def __init__(self, P_min, P_max):
         self.p_min = Punkt(P_min)
         self.p_max = Punkt(P_max)
@@ -14,7 +19,6 @@ class Wuerfel:
         x0, y0, z0 = self.p_min.x, self.p_min.y, self.p_min.z
         x1, y1, z1 = self.p_max.x, self.p_max.y, self.p_max.z
 
-        # Vértices del cubo
         v1 = Punkt(x0, y0, z0)
         v2 = Punkt(x1, y0, z0)
         v3 = Punkt(x1, y1, z0)
@@ -25,7 +29,6 @@ class Wuerfel:
         v7 = Punkt(x1, y1, z1)
         v8 = Punkt(x0, y1, z1)
 
-        # Creas las 6 fachadas/caras
         self.unten  = Fassade(v1, v2, v3, v4)
         self.oben   = Fassade(v5, v6, v7, v8)
         self.vorne  = Fassade(v1, v2, v6, v5)
@@ -34,6 +37,10 @@ class Wuerfel:
         self.rechts = Fassade(v2, v3, v7, v6)
 
         self.flaechen = [self.unten, self.oben, self.vorne, self.hinten, self.links, self.rechts]
+
+    # ======================================================================
+    # Grundlegende Operationen
+    # ======================================================================
 
     def flaecheninhalt(self):
         A = 0
@@ -79,58 +86,10 @@ class Wuerfel:
                 return True
             
         return False
-    
-    def schnitt_gerade(self, G: Gerade):
-        ergebnis = []
-        for F in self.flaechen:
-            S = F.schnitt_gerade(G)
-            if S is not None:
-                ergebnis.append(S)
 
-        return ergebnis
-
-    def schnitt_ebene(self, E: Ebene):
-        ergebnis = []
-        for F in self.flaechen:
-            ergebnis.append(F.schnitt_ebene(E))
-
-        return ergebnis
-
-    def schnitt_fassade(self, F2: Fassade):
-        ergebnis = []
-        for F in self.flaechen:
-            ergebnis.append(F.schnitt_fassade(F2))
-
-        return ergebnis
-    
-    def abstand_punkt(self, Q):
-        D = []
-        for F in self.flaechen:
-            D.append(F.abstand_punkt(Q))
-
-        return min(D)
-    
-    def abstand_gerade(self, G: Gerade):
-        D = []
-        for F in self.flaechen:
-            D.append(F.abstand_gerade(G))
-
-        return min(D)
-
-
-    def abstand_ebene(self, E: Ebene):
-        D = []
-        for F in self.flaechen:
-            D.append(F.abstand_ebene(E))
-
-        return min(D)
-    
-    def abstand_fassade(self, F2):
-        D = []
-        for F in self.flaechen:
-            D.append(F.abstand_fassade(F2))
-
-        return min(D)
+    # ======================================================================
+    # Lagebeziehungen
+    # ======================================================================    
     
     def lage_gerade(self, G: Gerade, flaeche: Fassade = None):
         if flaeche is None:
@@ -228,3 +187,67 @@ class Wuerfel:
             return "parallel"
         
         return "ausser"
+    
+    # ======================================================================
+    # Schnittberechnungen
+    # ======================================================================   
+    
+    def schnitt_gerade(self, G: Gerade):
+        ergebnis = []
+        for F in self.flaechen:
+            S = F.schnitt_gerade(G)
+            if S is not None:
+                ergebnis.append(S)
+
+        return ergebnis
+
+    def schnitt_ebene(self, E: Ebene):
+        ergebnis = []
+        for F in self.flaechen:
+            ergebnis.append(F.schnitt_ebene(E))
+
+        return ergebnis
+
+    def schnitt_fassade(self, F2: Fassade):
+        ergebnis = []
+        for F in self.flaechen:
+            ergebnis.append(F.schnitt_fassade(F2))
+
+        return ergebnis
+
+    # ======================================================================
+    # Abstandsberechnungen
+    # ======================================================================
+
+    def abstand_punkt(self, Q):
+        D = []
+        for F in self.flaechen:
+            D.append(F.abstand_punkt(Q))
+
+        return min(D)
+    
+    def abstand_gerade(self, G: Gerade):
+        D = []
+        for F in self.flaechen:
+            D.append(F.abstand_gerade(G))
+
+        return min(D)
+
+
+    def abstand_ebene(self, E: Ebene):
+        D = []
+        for F in self.flaechen:
+            D.append(F.abstand_ebene(E))
+
+        return min(D)
+    
+    def abstand_fassade(self, F2):
+        D = []
+        for F in self.flaechen:
+            D.append(F.abstand_fassade(F2))
+
+        return min(D)
+
+    # ======================================================================
+    # Transformationen
+    # ======================================================================

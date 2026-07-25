@@ -53,6 +53,9 @@ class Fassade:
 	E : Ebene
 		Die Ebene, in der die Fassade liegt.
 	"""
+	# ======================================================================
+	# Konstruktoren
+	# ======================================================================
 
 	def __init__(self, X1, X2, X3, X4):
 		"""
@@ -98,9 +101,9 @@ class Fassade:
 		self.norm_vektor = self.kante_X1_X2.richtungsvektor.cross(self.kante_X2_X3.richtungsvektor)
 		self.E = Ebene(self.X1, self.norm_vektor)
 
-	#--------------------------------------
-	#               Geometrie
-	#--------------------------------------
+	# ======================================================================
+	# Grundlegende Operationen
+	# ======================================================================
 
 	def flaecheninhalt(self):
 		"""
@@ -134,10 +137,6 @@ class Fassade:
 		U = self.kante_X1_X2.richtungsvektor.mod() + self.kante_X2_X3.richtungsvektor.mod() + self.kante_X3_X4.richtungsvektor.mod() + self.kante_X4_X1.richtungsvektor.mod()
 		
 		return U
-	
-	#--------------------------------------
-	#               Punkte
-	#--------------------------------------
 
 	def enthaelt_punkt(self, Q):
 		"""
@@ -241,342 +240,10 @@ class Fassade:
 				return True
 
 		return False
-
-	def schnitt_gerade(self, G: Gerade):
-		"""
-		Berechnet den Schnitt dieser Fassade mit einer Geraden.
-
-		Je nach Lagebeziehung zwischen Fassade und Gerade (siehe
-		`lage_gerade`) wird die Gerade selbst, der Schnittpunkt mit der
-		Fassadenebene, eine Kante der Fassade oder None zurückgegeben.
-
-		Parameters
-		----------
-		G : Gerade
-			Die Gerade, deren Schnitt mit der Fassade berechnet werden soll.
-
-		Returns
-		-------
-		Gerade or Punkt or None
-			Das Ergebnis der Schnittberechnung, abhängig von der
-			Lagebeziehung zwischen Fassade und Gerade.
-		"""
-		losung = self.lage_gerade(G)
-
-		if losung == "identisch":
-			return G
-		
-		if losung == "schneidend" or losung == "beruehrend":
-			S = self.E.schnittpunkt_gerade(G)
-			return S
-		
-		if losung == "auf_kante":
-			for K in self.kanten:
-				if G.lage_gerade(K) == "identisch":
-					return K	
-					
-		return None
 	
-	def schnitt_ebene(self, E: Ebene):
-		"""
-		Berechnet den Schnitt dieser Fassade mit einer Ebene.
-
-		Je nach Lagebeziehung zwischen Fassade und Ebene (siehe
-		`lage_ebene`) wird None, die Schnittgerade der beiden Ebenen
-		oder ein berührender Eckpunkt der Fassade zurückgegeben.
-
-		Parameters
-		----------
-		E : Ebene
-			Die Ebene, deren Schnitt mit der Fassade berechnet werden soll.
-
-		Returns
-		-------
-		Gerade or Punkt or None
-			Das Ergebnis der Schnittberechnung, abhängig von der
-			Lagebeziehung zwischen Fassade und Ebene.
-		"""
-		losung = self.lage_ebene(E)
-
-		if losung in ("parallel", "ausserhalb", "identisch"):
-			return None
-		
-		elif losung in ("auf_kante", "schneidend"):
-			return self.E.schnittgerade_ebene(E)
-		
-		elif losung == "beruehrend":
-			for P in self.punkte:
-				if E.enthaelt_punkt(P):
-					return P
-
-	def schnitt_fassade(self, F2: "Fassade"):
-		"""
-		Berechnet den Schnitt dieser Fassade mit einer anderen Fassade.
-
-		Je nach Lagebeziehung zwischen den beiden Fassaden (siehe
-		`lage_fassade`) wird None, die zweite Fassade, die Schnittgerade
-		der Ebenen, ein berührender Punkt, ein Kantenschnittpunkt oder
-		eine neue, aus den Schnittpunkten gebildete Fassade zurückgegeben.
-
-		Parameters
-		----------
-		F2 : Fassade
-			Die zweite Fassade, deren Schnitt mit dieser Fassade
-			berechnet werden soll.
-
-		Returns
-		-------
-		Fassade or Punkt or Gerade or None
-			Das Ergebnis der Schnittberechnung, abhängig von der
-			Lagebeziehung zwischen den beiden Fassaden.
-		"""
-		losung = self.lage_fassade(F2)
-
-		if losung in ("ausserhalb", "koplanar_ausserhalb", "parallel"):
-			return None
-		
-		elif losung == "identisch":
-			return F2
-
-		elif losung == "schneidend":
-			return self.E.schnittgerade_ebene(F2.E)
-		
-		elif losung == "beruehrend":
-			P = []
-
-			for P1 in self.punkte:
-				if F2.punkt_in_kante(P1):
-					return P1
-				
-			for P2 in F2.punkte:
-				if self.punkt_in_kante(P2):
-					return P2
-		
-		elif losung == "kanten_schneidend":
-			for K1 in self.kanten:
-				for K2 in F2.kanten:
-
-					if K1.lage_gerade(K2) != "schneidend":
-						continue
-
-					S = K1.schnitt_mit_gerade(K2)
-
-					r1 = K1.quotient_berechnen(S)
-					r2 = K2.quotient_berechnen(S)
-
-					if (
-						r1 is not None and 0 <= r1 <= 1 and
-						r2 is not None and 0 <= r2 <= 1
-					):
-						return S
-							
-		
-		elif losung == "koplanar_schneidend":
-				P = []
-
-				# 1. Punkte sammeln, an denen sich die Kanten tatsächlich schneiden
-				for K1 in self.kanten:
-					for K2 in F2.kanten:
-						if K1.lage_gerade(K2) == "schneidend":
-							pt = K1.schnitt_mit_gerade(K2)
-							r1 = K1.quotient_berechnen(pt)
-							r2 = K2.quotient_berechnen(pt)
-							if r1 is not None and 0 <= r1 <= 1 and r2 is not None and 0 <= r2 <= 1:
-								if not any(close(pt, e) for e in P):
-									P.append(pt)
-
-				# 2. Eckpunkte von F1 hinzufügen, die innerhalb von F2 liegen
-				for P1 in self.punkte:
-					if F2.enthaelt_punkt(P1) and not any(close(P1, e) for e in P):
-						P.append(P1)
-
-				# 3. Eckpunkte von F2 hinzufügen, die innerhalb von F1 liegen
-				for P2 in F2.punkte:
-					if self.enthaelt_punkt(P2) and not any(close(P2, e) for e in P):
-						P.append(P2)
-
-				if len(P) >= 4:
-					# Punkte minimal ordnen, damit sie bei Bedarf ein gültiges Polygon bilden
-					return Fassade(P[0], P[1], P[2], P[3])
-				
-				return None
-			
-	#--------------------------------------
-	#               Abstände
-	#--------------------------------------
-
-	def abstand_punkt(self, Q):
-		"""
-		Berechnet den Abstand eines Punkts zu dieser Fassade.
-
-		Zunächst wird der Lotfußpunkt des Punkts auf der Fassadenebene
-		bestimmt. Liegt dieser innerhalb der Fassade, entspricht der
-		Abstand dem Abstand zur Ebene. Andernfalls wird der minimale
-		Abstand des Punkts zu den vier Kanten der Fassade zurückgegeben.
-
-		Parameters
-		----------
-		Q : array_like
-			Der Punkt, dessen Abstand zur Fassade berechnet werden soll.
-
-		Returns
-		-------
-		float
-			Der Abstand des Punkts zur Fassade.
-		"""
-		Q = Vektor(Q)
-		
-		EQ = Gerade(Q, self.E.norm_vektor)
-		L = self.E.schnittpunkt_gerade(EQ)
-		# Prüfen, ob der orthogonale Lotfußpunkt ein Punkt der Fassade ist
-
-		if L is not None and self.enthaelt_punkt(L):
-				LQ = Q - L
-				d = LQ.mod()
-				return d
-		else:
-			D = [
-			self.kante_X1_X2.abstand_zu_punkt(Q),
-			self.kante_X2_X3.abstand_zu_punkt(Q),
-			self.kante_X3_X4.abstand_zu_punkt(Q),
-			self.kante_X4_X1.abstand_zu_punkt(Q)
-			]
-
-			return min(D)
-		
-		return None
-
-	def abstand_gerade(self, G: Gerade):
-		"""
-		Berechnet den Abstand dieser Fassade zu einer Geraden.
-
-		Schneidet die Gerade die Fassade, ist der Abstand 0. Andernfalls
-		wird je nach Lagebeziehung zwischen Gerade und Fassadenebene der
-		minimale Abstand über die Kanten der Fassade oder über die Ebene
-		bestimmt.
-
-		Parameters
-		----------
-		G : Gerade
-			Die Gerade, deren Abstand zur Fassade berechnet werden soll.
-
-		Returns
-		-------
-		float
-			Der Abstand zwischen der Fassade und der Geraden.
-		"""
-
-		if self.schnitt_gerade(G) is not None:
-			return 0.0
-		
-		elif  self.E.lage_gerade(G) in ("identisch", "koplanar_ausserhalb"):
-			D = []
-			for K in [self.kante_X1_X2, self.kante_X2_X3, self.kante_X3_X4, self.kante_X4_X1]:
-				D.append(K.abstand_zu_gerade(G))
-
-			return min(D)
-		
-		elif self.E.lage_gerade(G) == "parallel":
-
-			return self.E.abstand_gerade(G)
-		
-		elif self.lage_gerade(G) == "ausserhalb":
-			S = self.E.schnittpunkt_gerade(G)
-			D = []
-			for K in self.kanten:
-				D.append(K.abstand_zu_punkt(S))
-				D.append(K.abstand_zu_gerade(G))
-
-			return min(D)
-
-
-	def abstand_ebene(self, E: Ebene):
-		"""
-		Berechnet den Abstand dieser Fassade zu einer Ebene.
-
-		Bei Schnitt, Identität, Berührung oder Lage auf einer Kante ist
-		der Abstand 0. Bei paralleler Lage wird der Ebenenabstand
-		verwendet, andernfalls wird der Abstand über die Schnittgerade
-		der beiden Ebenen bestimmt.
-
-		Parameters
-		----------
-		E : Ebene
-			Die Ebene, deren Abstand zur Fassade berechnet werden soll.
-
-		Returns
-		-------
-		float
-			Der Abstand zwischen der Fassade und der Ebene.
-		"""
-		losung = self.lage_ebene(E)
-
-		if losung in ("schneidend", "identisch", "beruehrend", "auf_kante"):
-			return 0.0
-		
-		elif losung == "parallel":
-			return self.E.abstand_ebene(E)
-		
-		elif losung == "ausserhalb":
-			gS = self.E.schnittgerade_ebene(E)
-			
-			return self.abstand_gerade(gS)
-
-	def abstand_fassade(self, F2):
-		"""
-		Berechnet den Abstand dieser Fassade zu einer anderen Fassade.
-
-		Bei sich schneidenden, berührenden oder identischen Fassaden ist
-		der Abstand 0. Bei paralleler Lage wird der Ebenenabstand
-		verwendet. Andernfalls wird der minimale Abstand zwischen den
-		Eckpunkten der einen Fassade und den (begrenzten) Kanten der
-		anderen Fassade bestimmt.
-
-		Parameters
-		----------
-		F2 : Fassade
-			Die zweite Fassade, deren Abstand zu dieser Fassade
-			berechnet werden soll.
-
-		Returns
-		-------
-		float
-			Der Abstand zwischen den beiden Fassaden.
-		"""
-		losung = self.lage_fassade(F2)
-
-		if losung in ("identisch", "schneidend", "koplanar_schneidend", "kanten_schneidend", "auf_kante", "beruehrend"):
-			return 0.0
-
-		elif losung == "parallel":
-			return self.E.abstand_ebene(F2.E)
-		
-		elif losung in ("ausserhalb", "koplanar_ausserhalb"):
-			D = []
-
-		# 1. Abstand jedes Eckpunkts von F1 zu jeder begrenzten Kante von F2
-			for P in self.punkte:
-				for K in F2.kanten:
-					L = K.lotfusspunkt(P)
-					r = K.quotient_berechnen(L)
-
-					if r is not None and 0 <= r <= 1:
-						D.append((P - L).mod())
-
-			# 2. Abstand jedes Eckpunkts von F2 zu jeder begrenzten Kante von F1
-			for P in F2.punkte:
-				for K in self.kanten:
-					L = K.lotfusspunkt(P)
-					r = K.quotient_berechnen(L)
-
-					if r is not None and 0 <= r <= 1:
-						D.append((P - L).mod())
-						
-			return min(D) if D else 0.0
-
-	#--------------------------------------
-	#               Lage
-	#--------------------------------------
+	# ======================================================================
+	# Lagebeziehungen
+	# ======================================================================
 
 	def lage_gerade(self, G: Gerade):
 		"""
@@ -811,7 +478,346 @@ class Fassade:
 			return "koplanar_ausserhalb"
 			
 		return "ausserhalb"
+	
+	# ======================================================================
+	# Schnittberechnungen
+	# ======================================================================
 
+	def schnitt_gerade(self, G: Gerade):
+		"""
+		Berechnet den Schnitt dieser Fassade mit einer Geraden.
+
+		Je nach Lagebeziehung zwischen Fassade und Gerade (siehe
+		`lage_gerade`) wird die Gerade selbst, der Schnittpunkt mit der
+		Fassadenebene, eine Kante der Fassade oder None zurückgegeben.
+
+		Parameters
+		----------
+		G : Gerade
+			Die Gerade, deren Schnitt mit der Fassade berechnet werden soll.
+
+		Returns
+		-------
+		Gerade or Punkt or None
+			Das Ergebnis der Schnittberechnung, abhängig von der
+			Lagebeziehung zwischen Fassade und Gerade.
+		"""
+		losung = self.lage_gerade(G)
+
+		if losung == "identisch":
+			return G
+		
+		if losung == "schneidend" or losung == "beruehrend":
+			S = self.E.schnittpunkt_gerade(G)
+			return S
+		
+		if losung == "auf_kante":
+			for K in self.kanten:
+				if G.lage_gerade(K) == "identisch":
+					return K	
+					
+		return None
+	
+	def schnitt_ebene(self, E: Ebene):
+		"""
+		Berechnet den Schnitt dieser Fassade mit einer Ebene.
+
+		Je nach Lagebeziehung zwischen Fassade und Ebene (siehe
+		`lage_ebene`) wird None, die Schnittgerade der beiden Ebenen
+		oder ein berührender Eckpunkt der Fassade zurückgegeben.
+
+		Parameters
+		----------
+		E : Ebene
+			Die Ebene, deren Schnitt mit der Fassade berechnet werden soll.
+
+		Returns
+		-------
+		Gerade or Punkt or None
+			Das Ergebnis der Schnittberechnung, abhängig von der
+			Lagebeziehung zwischen Fassade und Ebene.
+		"""
+		losung = self.lage_ebene(E)
+
+		if losung in ("parallel", "ausserhalb", "identisch"):
+			return None
+		
+		elif losung in ("auf_kante", "schneidend"):
+			return self.E.schnittgerade_ebene(E)
+		
+		elif losung == "beruehrend":
+			for P in self.punkte:
+				if E.enthaelt_punkt(P):
+					return P
+
+	def schnitt_fassade(self, F2: "Fassade"):
+		"""
+		Berechnet den Schnitt dieser Fassade mit einer anderen Fassade.
+
+		Je nach Lagebeziehung zwischen den beiden Fassaden (siehe
+		`lage_fassade`) wird None, die zweite Fassade, die Schnittgerade
+		der Ebenen, ein berührender Punkt, ein Kantenschnittpunkt oder
+		eine neue, aus den Schnittpunkten gebildete Fassade zurückgegeben.
+
+		Parameters
+		----------
+		F2 : Fassade
+			Die zweite Fassade, deren Schnitt mit dieser Fassade
+			berechnet werden soll.
+
+		Returns
+		-------
+		Fassade or Punkt or Gerade or None
+			Das Ergebnis der Schnittberechnung, abhängig von der
+			Lagebeziehung zwischen den beiden Fassaden.
+		"""
+		losung = self.lage_fassade(F2)
+
+		if losung in ("ausserhalb", "koplanar_ausserhalb", "parallel"):
+			return None
+		
+		elif losung == "identisch":
+			return F2
+
+		elif losung == "schneidend":
+			return self.E.schnittgerade_ebene(F2.E)
+		
+		elif losung == "beruehrend":
+			P = []
+
+			for P1 in self.punkte:
+				if F2.punkt_in_kante(P1):
+					return P1
+				
+			for P2 in F2.punkte:
+				if self.punkt_in_kante(P2):
+					return P2
+		
+		elif losung == "kanten_schneidend":
+			for K1 in self.kanten:
+				for K2 in F2.kanten:
+
+					if K1.lage_gerade(K2) != "schneidend":
+						continue
+
+					S = K1.schnitt_mit_gerade(K2)
+
+					r1 = K1.quotient_berechnen(S)
+					r2 = K2.quotient_berechnen(S)
+
+					if (
+						r1 is not None and 0 <= r1 <= 1 and
+						r2 is not None and 0 <= r2 <= 1
+					):
+						return S
+							
+		
+		elif losung == "koplanar_schneidend":
+				P = []
+
+				# 1. Punkte sammeln, an denen sich die Kanten tatsächlich schneiden
+				for K1 in self.kanten:
+					for K2 in F2.kanten:
+						if K1.lage_gerade(K2) == "schneidend":
+							pt = K1.schnitt_mit_gerade(K2)
+							r1 = K1.quotient_berechnen(pt)
+							r2 = K2.quotient_berechnen(pt)
+							if r1 is not None and 0 <= r1 <= 1 and r2 is not None and 0 <= r2 <= 1:
+								if not any(close(pt, e) for e in P):
+									P.append(pt)
+
+				# 2. Eckpunkte von F1 hinzufügen, die innerhalb von F2 liegen
+				for P1 in self.punkte:
+					if F2.enthaelt_punkt(P1) and not any(close(P1, e) for e in P):
+						P.append(P1)
+
+				# 3. Eckpunkte von F2 hinzufügen, die innerhalb von F1 liegen
+				for P2 in F2.punkte:
+					if self.enthaelt_punkt(P2) and not any(close(P2, e) for e in P):
+						P.append(P2)
+
+				if len(P) >= 4:
+					# Punkte minimal ordnen, damit sie bei Bedarf ein gültiges Polygon bilden
+					return Fassade(P[0], P[1], P[2], P[3])
+				
+				return None
+			
+	# ======================================================================
+	# Abstandsberechnungen
+	# ======================================================================
+
+	def abstand_punkt(self, Q):
+		"""
+		Berechnet den Abstand eines Punkts zu dieser Fassade.
+
+		Zunächst wird der Lotfußpunkt des Punkts auf der Fassadenebene
+		bestimmt. Liegt dieser innerhalb der Fassade, entspricht der
+		Abstand dem Abstand zur Ebene. Andernfalls wird der minimale
+		Abstand des Punkts zu den vier Kanten der Fassade zurückgegeben.
+
+		Parameters
+		----------
+		Q : array_like
+			Der Punkt, dessen Abstand zur Fassade berechnet werden soll.
+
+		Returns
+		-------
+		float
+			Der Abstand des Punkts zur Fassade.
+		"""
+		Q = Vektor(Q)
+		
+		EQ = Gerade(Q, self.E.norm_vektor)
+		L = self.E.schnittpunkt_gerade(EQ)
+		# Prüfen, ob der orthogonale Lotfußpunkt ein Punkt der Fassade ist
+
+		if L is not None and self.enthaelt_punkt(L):
+				LQ = Q - L
+				d = LQ.mod()
+				return d
+		else:
+			D = [
+			self.kante_X1_X2.abstand_zu_punkt(Q),
+			self.kante_X2_X3.abstand_zu_punkt(Q),
+			self.kante_X3_X4.abstand_zu_punkt(Q),
+			self.kante_X4_X1.abstand_zu_punkt(Q)
+			]
+
+			return min(D)
+		
+		return None
+
+	def abstand_gerade(self, G: Gerade):
+		"""
+		Berechnet den Abstand dieser Fassade zu einer Geraden.
+
+		Schneidet die Gerade die Fassade, ist der Abstand 0. Andernfalls
+		wird je nach Lagebeziehung zwischen Gerade und Fassadenebene der
+		minimale Abstand über die Kanten der Fassade oder über die Ebene
+		bestimmt.
+
+		Parameters
+		----------
+		G : Gerade
+			Die Gerade, deren Abstand zur Fassade berechnet werden soll.
+
+		Returns
+		-------
+		float
+			Der Abstand zwischen der Fassade und der Geraden.
+		"""
+
+		if self.schnitt_gerade(G) is not None:
+			return 0.0
+		
+		elif  self.E.lage_gerade(G) in ("identisch", "koplanar_ausserhalb"):
+			D = []
+			for K in [self.kante_X1_X2, self.kante_X2_X3, self.kante_X3_X4, self.kante_X4_X1]:
+				D.append(K.abstand_zu_gerade(G))
+
+			return min(D)
+		
+		elif self.E.lage_gerade(G) == "parallel":
+
+			return self.E.abstand_gerade(G)
+		
+		elif self.lage_gerade(G) == "ausserhalb":
+			S = self.E.schnittpunkt_gerade(G)
+			D = []
+			for K in self.kanten:
+				D.append(K.abstand_zu_punkt(S))
+				D.append(K.abstand_zu_gerade(G))
+
+			return min(D)
+
+
+	def abstand_ebene(self, E: Ebene):
+		"""
+		Berechnet den Abstand dieser Fassade zu einer Ebene.
+
+		Bei Schnitt, Identität, Berührung oder Lage auf einer Kante ist
+		der Abstand 0. Bei paralleler Lage wird der Ebenenabstand
+		verwendet, andernfalls wird der Abstand über die Schnittgerade
+		der beiden Ebenen bestimmt.
+
+		Parameters
+		----------
+		E : Ebene
+			Die Ebene, deren Abstand zur Fassade berechnet werden soll.
+
+		Returns
+		-------
+		float
+			Der Abstand zwischen der Fassade und der Ebene.
+		"""
+		losung = self.lage_ebene(E)
+
+		if losung in ("schneidend", "identisch", "beruehrend", "auf_kante"):
+			return 0.0
+		
+		elif losung == "parallel":
+			return self.E.abstand_ebene(E)
+		
+		elif losung == "ausserhalb":
+			gS = self.E.schnittgerade_ebene(E)
+			
+			return self.abstand_gerade(gS)
+
+	def abstand_fassade(self, F2):
+		"""
+		Berechnet den Abstand dieser Fassade zu einer anderen Fassade.
+
+		Bei sich schneidenden, berührenden oder identischen Fassaden ist
+		der Abstand 0. Bei paralleler Lage wird der Ebenenabstand
+		verwendet. Andernfalls wird der minimale Abstand zwischen den
+		Eckpunkten der einen Fassade und den (begrenzten) Kanten der
+		anderen Fassade bestimmt.
+
+		Parameters
+		----------
+		F2 : Fassade
+			Die zweite Fassade, deren Abstand zu dieser Fassade
+			berechnet werden soll.
+
+		Returns
+		-------
+		float
+			Der Abstand zwischen den beiden Fassaden.
+		"""
+		losung = self.lage_fassade(F2)
+
+		if losung in ("identisch", "schneidend", "koplanar_schneidend", "kanten_schneidend", "auf_kante", "beruehrend"):
+			return 0.0
+
+		elif losung == "parallel":
+			return self.E.abstand_ebene(F2.E)
+		
+		elif losung in ("ausserhalb", "koplanar_ausserhalb"):
+			D = []
+
+		# 1. Abstand jedes Eckpunkts von F1 zu jeder begrenzten Kante von F2
+			for P in self.punkte:
+				for K in F2.kanten:
+					L = K.lotfusspunkt(P)
+					r = K.quotient_berechnen(L)
+
+					if r is not None and 0 <= r <= 1:
+						D.append((P - L).mod())
+
+			# 2. Abstand jedes Eckpunkts von F2 zu jeder begrenzten Kante von F1
+			for P in F2.punkte:
+				for K in self.kanten:
+					L = K.lotfusspunkt(P)
+					r = K.quotient_berechnen(L)
+
+					if r is not None and 0 <= r <= 1:
+						D.append((P - L).mod())
+						
+			return min(D) if D else 0.0
+
+	# ======================================================================
+	# Transformationen
+	# ======================================================================
 
 	def __repr__(self):
 		"""
