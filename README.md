@@ -3,12 +3,13 @@
 </p>
 
 <p align="center">
-
-![Python](https://img.shields.io/badge/python-3.10+-blue.svg)
-![License](https://img.shields.io/github/license/VacationAir/analytische-geometrie)
-![Tests](https://img.shields.io/badge/tests-83-success)
-![NumPy](https://img.shields.io/badge/dependency-NumPy-blue)
-
+  
+![Pure Python](https://img.shields.io/badge/Pure-Python-3776AB?logo=python&logoColor=white)
+![3D Geometry](https://img.shields.io/badge/3D-Analytical%20Geometry-2E7D32)
+![Custom Vector Engine](https://img.shields.io/badge/Vector%20Engine-Custom-00695C)
+![Object-Oriented](https://img.shields.io/badge/API-Object--Oriented-1565C0)
+![83 Unit Tests](https://img.shields.io/badge/82-Unit%20Tests-success)
+![MIT License](https://img.shields.io/badge/License-MIT-6A1B9A)
 </p>
 
 # Analytische Geometrie
