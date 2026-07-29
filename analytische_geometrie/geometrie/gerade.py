@@ -365,8 +365,23 @@ class Gerade:
     # ======================================================================
 
     def skalieren(self, faktor):
-        pass
+        return Gerade(self.stutzvektor.skalieren(faktor), self.richtungsvektor.skalieren(faktor))
 
+    def drehen(self, winkel, achse):
+        return Gerade(self.stutzvektor.drehen(winkel, achse), self.richtungsvektor.drehen(winkel, achse))
+
+    def verschieben(self, v):
+        return Gerade(self.stutzvektor.verschieben(v), self.richtungsvektor)
+
+    def spiegeln_an_punkt(self, P):
+        return Gerade(self.stutzvektor.spiegeln_an_punkt(P), self.richtungsvektor.spiegeln_an_punkt(P))
+
+    def spiegeln_an_gerade(self, g):
+        return Gerade(self.stutzvektor.spiegeln_an_gerade(g), self.richtungsvektor.spiegeln_an_gerade(g))
+
+    def spiegeln_an_ebene(self, E):
+        return Gerade(self.stutzvektor.spiegeln_an_ebene(E), self.richtungsvektor.spiegeln_an_ebene(E))
+    
     def __repr__(self):
         """
         Gibt eine lesbare String-Repräsentation der Geraden zurück.

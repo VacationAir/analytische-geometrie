@@ -1,4 +1,5 @@
 import math
+from ..utils.transform_utils import Transformation
 
 class Vektor(tuple):
     """
@@ -54,3 +55,24 @@ class Vektor(tuple):
     def mod(self):
         return abs(self)
 
+    # ======================================================================
+    # Transformationen
+    # ======================================================================
+
+    def skalieren(self, faktor):
+        return Transformation.skalieren(self, faktor)
+
+    def drehen(self, winkel, achse):
+        return Transformation.drehen(self, winkel, achse)
+
+    def verschieben(self, v):
+        return Transformation.verschieben(self, v)
+
+    def spiegeln_an_punkt(self, P):
+        return Transformation.spiegeln_an_punkt(self, P)
+
+    def spiegeln_an_gerade(self, g):
+        return Transformation.spiegeln_an_gerade(self, g)
+
+    def spiegeln_an_ebene(self, E):
+        return Transformation.spiegeln_an_ebene(self, E)

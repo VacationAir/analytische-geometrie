@@ -291,6 +291,15 @@ class Ebene:
         else:
             return None
 
+    def lotfusspunkt(self, P):
+        zaehler = (P -self.punkt).dot(self.norm_vektor)
+        nenner = self.norm_vektor.dot(self.norm_vektor)
+        r = zaehler/nenner
+
+        L = P - r * self.norm_vektor
+
+        return L
+    
     # ======================================================================
     # Abstandsberechnungen
     # ======================================================================
@@ -311,7 +320,7 @@ class Ebene:
             liegt, wird 0 zurückgegeben.
         """
         if not self.enthaelt_punkt(punkt):
-            p_array = punkt.punkt if isinstance(punkt, Punkt) else Vektor(punkt)
+            p_array = punkt
             zaehler = abs((p_array - self.punkt).dot(self.norm_vektor))
             nenner = self.norm_vektor.mod()
             d = zaehler / nenner
@@ -425,6 +434,24 @@ class Ebene:
     # ======================================================================
     # Transformationen
     # ======================================================================
+
+    def skalieren(self, faktor):
+        return Ebene(self.punkt.skalieren(faktor), self.norm_vektor.skalieren(faktor))
+
+    def drehen(self, winkel, achse):
+        return Ebene(self.punkt.drehen(winkel, achse), self.norm_vektor.drehen(winkel, achse))
+
+    def verschieben(self, v):
+        return Ebene(self.punkt.verschieben(v), self.norm_vektor)
+
+    def spiegeln_an_punkt(self, P):
+        return Ebene(self.punkt.spiegeln_an_punkt(P), self.norm_vektor.spiegeln_an_punkt(P))
+
+    def spiegeln_an_gerade(self, g):
+        return Ebene(self.punkt.spiegeln_an_gerade(g), self.norm_vektor.spiegeln_an_gerade(g))
+
+    def spiegeln_an_ebene(self, E):
+        return Ebene(self.punkt.spiegeln_an_ebene(E), self.norm_vektor.spiegeln_an_ebene(E))
 
     def __repr__(self):
         """

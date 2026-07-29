@@ -23,7 +23,7 @@ class Punkt(Vektor):
     Raum.
     """
 
-    def abstand_zu_punkt(self, punkt2):
+    def abstand_punkt(self, punkt2):
         """
         Berechnet den euklidischen Abstand zu einem anderen Punkt.
 
@@ -40,8 +40,7 @@ class Punkt(Vektor):
         float
             Der euklidische Abstand zwischen den beiden Punkten.
         """
-        p2 = punkt2.punkt if isinstance(punkt2, Punkt) else Vektor(punkt2)
-        a = self.punkt - p2
+        a = self - punkt2
 
         return a.mod()
     
@@ -61,5 +60,4 @@ class Punkt(Vektor):
         Vector
             Der Verbindungsvektor (punkt2 - self.punkt) als Vektor-Objekt.
         """
-        p2 = punkt2.punkt if isinstance(punkt2, Punkt) else Vektor(punkt2)
-        return p2 - self.punkt
+        return punkt2 - self

@@ -29,6 +29,8 @@ class Wuerfel:
         v7 = Punkt(x1, y1, z1)
         v8 = Punkt(x0, y1, z1)
 
+        self.eckpunkte = (v1, v2, v3, v4, v5, v6, v7, v8)
+
         self.unten  = Fassade(v1, v2, v3, v4)
         self.oben   = Fassade(v5, v6, v7, v8)
         self.vorne  = Fassade(v1, v2, v6, v5)
@@ -251,3 +253,21 @@ class Wuerfel:
     # ======================================================================
     # Transformationen
     # ======================================================================
+
+    def skalieren(self, faktor):
+        return Wuerfel(self.p_min.skalieren(faktor), self.p_max.skalieren(faktor))
+
+    def drehen(self, winkel, achse):
+        return Wuerfel(self.p_min.drehen(winkel, achse), self.p_max.drehen(winkel, achse))
+
+    def verschieben(self, v):
+        return Wuerfel(self.p_min.verschieben(v), self.p_max.verschieben(v))
+
+    def spiegeln_an_punkt(self, P):
+        return Wuerfel(self.p_min.spiegeln_an_punkt(P), self.p_max.spiegeln_an_punkt(P))
+
+    def spiegeln_an_gerade(self, g):
+        return Wuerfel(self.p_min.spiegeln_an_gerade(g), self.p_max.spiegeln_an_gerade(g))
+
+    def spiegeln_an_ebene(self, E):
+        return Wuerfel(self.p_min.spiegeln_an_ebene(E), self.p_max.spiegeln_an_ebene(E))

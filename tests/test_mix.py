@@ -13,11 +13,11 @@ def test_punkt_roundtrip_operations():
     p = Punkt([1.5, -2.0, 3.0])
     p2 = Punkt([4.5, 1.0, -1.0])
 
-    v = p.punkt_punkt(p2.get_punkt())
+    v = p.punkt_punkt(p2)
     assert close(v, [3.0, 3.0, -4.0])
 
-    assert close(p.abstand_zu_punkt(p2.get_punkt()),
-                       Vektor(3.0, 3.0, -4.0). mod())
+    assert close(p.abstand_punkt(p2),
+                       Vektor(3.0, 3.0, -4.0).mod())
 
 
 

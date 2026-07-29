@@ -22,13 +22,13 @@ class TestEbene:
         """Testet ob Punkt in Ebene liegt (wahr)"""
         E = Ebene([0, 0, 0], [1, 0, 0])
         p = Punkt([0, 1, 2])
-        assert E.enthaelt_punkt(p.punkt) is True
+        assert E.enthaelt_punkt(p) is True
         
     def test_enthaelt_punkt_false(self):
         """Testet ob Punkt in Ebene liegt (falsch)"""
         E = Ebene([0, 0, 0], [1, 0, 0])
         p = Punkt([1, 0, 0])
-        assert E.enthaelt_punkt(p.punkt) is False
+        assert E.enthaelt_punkt(p) is False
         
     def test_lage_gerade_schneidend(self):
         """Testet schneidende Gerade-Ebene"""
@@ -83,7 +83,7 @@ class TestEbene:
         """Testet den Abstand Punkt-Ebene"""
         E = Ebene([0, 0, 0], [1, 0, 0])
         p = Punkt([3, 4, 0])
-        assert E.abstand_punkt(p.punkt) == 3.0
+        assert E.abstand_punkt(p) == 3.0
         
     def test_abstand_gerade_parallel(self):
         """Testet den Abstand Gerade-Ebene (parallel)"""
@@ -143,3 +143,111 @@ class TestEbene:
             q = q - ((q - p).dot(n) / n.dot(n)) * n
 
             assert E.enthaelt_punkt(q)
+
+class TestTransformEbene:
+
+    def test_skalieren(self):
+        """Testet die Skalierung einer Ebene"""
+        E = Ebene(
+            Vektor([1, 2, 3]),
+            Vektor([0, 0, 1])
+        )
+
+        E2 = E.skalieren(2)
+
+        assert close(E2.punkt, Vektor([2, 4, 6]))
+        assert close(E2.norm_vektor, Vektor([0, 0, 2]))
+
+    def test_verschieben(self):
+        """Testet die Verschiebung einer Ebene"""
+        E = Ebene(
+            Vektor([1, 2, 3]),
+            Vektor([0, 0, 1])
+        )
+
+        E2 = E.verschieben(Vektor([1, 1, 1]))
+
+        assert close(E2.punkt, Vektor([2, 3, 4]))
+        assert close(E2.norm_vektor, Vektor([0, 0, 1]))
+
+    def test_drehen_x(self):
+        """Testet die Rotation einer Ebene um die x-Achse"""
+        E = Ebene(
+            Vektor([0, 1, 0]),
+            Vektor([0, 1, 0])
+        )
+
+        E2 = E.drehen(90, "x")
+
+        assert close(E2.punkt, Vektor([0, 0, 1]))
+        assert close(E2.norm_vektor, Vektor([0, 0, 1]))
+
+    def test_drehen_y(self):
+        """Testet die Rotation einer Ebene um die y-Achse"""
+        E = Ebene(
+            Vektor([0, 0, 1]),
+            Vektor([0, 0, 1])
+        )
+
+        E2 = E.drehen(90, "y")
+
+        assert close(E2.punkt, Vektor([1, 0, 0]))
+        assert close(E2.norm_vektor, Vektor([1, 0, 0]))
+
+    def test_drehen_z(self):
+        """Testet die Rotation einer Ebene um die z-Achse"""
+        E = Ebene(
+            Vektor([1, 0, 0]),
+            Vektor([1, 0, 0])
+        )
+
+        E2 = E.drehen(90, "z")
+
+        assert close(E2.punkt, Vektor([0, 1, 0]))
+        assert close(E2.norm_vektor, Vektor([0, 1, 0]))
+
+    def test_spiegeln_an_punkt(self):
+        """Testet die Spiegelung einer Ebene an einem Punkt"""
+        E = Ebene(
+            Vektor([1, 2, 3]),
+            Vektor([0, 0, 1])
+        )
+
+        E2 = E.spiegeln_an_punkt(Vektor([0, 0, 0]))
+
+        assert close(E2.punkt, Vektor([-1, -2, -3]))
+        assert close(E2.norm_vektor, Vektor([0, 0, -1]))
+
+    def test_spiegeln_an_gerade(self):
+        """Testet die Spiegelung einer Ebene an einer Geraden"""
+        g = Gerade(
+            Vektor([0, 0, 0]),
+            Vektor([1, 0, 0])
+        )
+
+        E = Ebene(
+            Vektor([0, 1, 0]),
+            Vektor([0, 1, 0])
+        )
+
+        E2 = E.spiegeln_an_gerade(g)
+
+        assert close(E2.punkt, Vektor([0, -1, 0]))
+        assert close(E2.norm_vektor, Vektor([0, -1, 0]))
+
+    def test_spiegeln_an_ebene(self):
+        """Testet die Spiegelung einer Ebene an einer Ebene"""
+        spiegel = Ebene(
+            Vektor([0, 0, 0]),
+            Vektor([0, 0, 1])
+        )
+
+        E = Ebene(
+            Vektor([1, 2, 3]),
+            Vektor([0, 1, 1])
+        )
+
+        E2 = E.spiegeln_an_ebene(spiegel)
+
+        assert close(E2.punkt, Vektor([1, 2, -3]))
+        assert close(E2.norm_vektor, Vektor([0, 1, -1]))

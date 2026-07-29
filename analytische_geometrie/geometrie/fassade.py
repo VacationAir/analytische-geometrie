@@ -411,7 +411,6 @@ class Fassade:
 			lage_in_F1 = self.lage_gerade(gS)
 			lage_in_F2 = F2.lage_gerade(gS)
 
-			print(gS)
 			if lage_in_F1 == "schneidend" and lage_in_F2 == "schneidend":
 				return "schneidend"
 			else:
@@ -819,6 +818,54 @@ class Fassade:
 	# Transformationen
 	# ======================================================================
 
+	def skalieren(self, faktor):
+		return Fassade(
+			self.X1.skalieren(faktor),
+			self.X2.skalieren(faktor),
+			self.X3.skalieren(faktor),
+			self.X4.skalieren(faktor)
+		)
+
+	def drehen(self, winkel, achse):
+		return Fassade(
+			self.X1.drehen(winkel, achse),
+			self.X2.drehen(winkel, achse),
+			self.X3.drehen(winkel, achse),
+			self.X4.drehen(winkel, achse)
+		)
+
+	def verschieben(self, v):
+		return Fassade(
+			self.X1.verschieben(v),
+			self.X2.verschieben(v),
+			self.X3.verschieben(v),
+			self.X4.verschieben(v)		
+		)
+
+	def spiegel_an_punkt(self, P):
+		return Fassade(
+			self.X1.spiegeln_an_punkt(P),
+			self.X2.spiegeln_an_punkt(P),
+			self.X3.spiegeln_an_punkt(P),
+			self.X4.spiegeln_an_punkt(P)			
+		)
+
+	def spiegel_an_gerade(self, g):
+		return Fassade(
+			self.X1.spiegeln_an_gerade(g),
+			self.X2.spiegeln_an_gerade(g),
+			self.X3.spiegeln_an_gerade(g),
+			self.X4.spiegeln_an_gerade(g)			
+		)
+
+	def spiegel_an_ebene(self, E):
+		return Fassade(
+			self.X1.spiegeln_an_ebene(E),
+			self.X2.spiegeln_an_ebene(E),
+			self.X3.spiegeln_an_ebene(E),
+			self.X4.spiegeln_an_ebene(E)			
+		)
+	
 	def __repr__(self):
 		"""
 		Gibt eine lesbare String-Repräsentation der Fassade zurück.

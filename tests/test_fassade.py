@@ -2,6 +2,8 @@ import math
 from analytische_geometrie.geometrie.fassade import Fassade
 from analytische_geometrie.geometrie.punkt import Punkt
 from analytische_geometrie.geometrie.vektor import Vektor
+from analytische_geometrie.geometrie.ebene import Ebene
+from analytische_geometrie.geometrie.gerade import Gerade
 from analytische_geometrie.utils.linal_utils import close
 
 class TestFassadeQuadratischEben:
@@ -30,37 +32,37 @@ class TestFassadeQuadratischEben:
     def test_enthaelt_punkt_innen(self):
         """Testet einen Punkt innerhalb der Fassade"""
         p = Punkt([1, 1, 0])
-        assert self.f.enthaelt_punkt(p.punkt) is True
+        assert self.f.enthaelt_punkt(p) is True
 
     def test_enthaelt_punkt_ausserhalb(self):
         """Testet einen Punkt weit außerhalb der Fassade"""
         p = Punkt([3, 1, 0])
-        assert self.f.enthaelt_punkt(p.punkt) is False
+        assert self.f.enthaelt_punkt(p) is False
 
     def test_enthaelt_punkt_auf_kante(self):
         """Testet einen Punkt genau auf der unteren Kante"""
         p = Punkt([1, 0, 0])
-        assert self.f.enthaelt_punkt(p.punkt) is True
+        assert self.f.enthaelt_punkt(p) is True
 
     def test_enthaelt_punkt_auf_ecke(self):
         """Testet einen Punkt genau auf einer der Ecken"""
         p = Punkt([0, 0, 0])
-        assert self.f.enthaelt_punkt(p.punkt) is True
+        assert self.f.enthaelt_punkt(p) is True
 
     def test_enthaelt_punkt_nicht_in_ebene(self):
         """Testet einen Punkt, der zwar im 'Schatten' liegt, aber auf z=1 (nicht in der Ebene)"""
         p = Punkt([1, 1, 1])
-        assert self.f.enthaelt_punkt(p.punkt) is False
+        assert self.f.enthaelt_punkt(p) is False
 
     def test_enthaelt_punkt_hinter_kante_unten(self):
         """Testet einen Punkt in der Ebene, aber unterhalb der Fassade"""
         p = Punkt([1, -1, 0])
-        assert self.f.enthaelt_punkt(p.punkt) is False
+        assert self.f.enthaelt_punkt(p) is False
     
     def test_enthaelt_punkt_links_ausserhalb(self):
         """Testet einen Punkt in der Ebene, aber links außerhalb der Fassade"""
         p = Punkt([-1, 1, 0])
-        assert self.f.enthaelt_punkt(p.punkt) is False
+        assert self.f.enthaelt_punkt(p) is False
 
     def test_enthaelt_punkt_eck_nah_ausserhalb(self):
         """
@@ -68,31 +70,31 @@ class TestFassadeQuadratischEben:
         Wichtig, um Grenzfälle des Lotfußpunkts oder der Winkelsumme zu prüfen.
         """
         p = Punkt([2.1, 2.1, 0.0])
-        assert self.f.enthaelt_punkt(p.punkt) is False
+        assert self.f.enthaelt_punkt(p) is False
 
     def test_enthaelt_punkt_centro(self):
         p = Punkt([1, 1, 0])
-        assert self.f.enthaelt_punkt(p.punkt) is True
+        assert self.f.enthaelt_punkt(p) is True
 
 
     def test_enthaelt_punto_muy_cerca_borde(self):
         p = Punkt([1e-7, 1, 0])
-        assert self.f.enthaelt_punkt(p.punkt) is True
+        assert self.f.enthaelt_punkt(p) is True
 
 
     def test_enthaelt_punto_muy_cerca_fuera(self):
         p = Punkt([-1e-7, 1, 0])
-        assert self.f.enthaelt_punkt(p.punkt) is False
+        assert self.f.enthaelt_punkt(p) is False
 
 
     def test_enthaelt_punto_casi_esquina(self):
         p = Punkt([2-1e-7, 2-1e-7, 0])
-        assert self.f.enthaelt_punkt(p.punkt) is True
+        assert self.f.enthaelt_punkt(p) is True
 
 
     def test_enthaelt_punto_casi_fuera_esquina(self):
         p = Punkt([2+1e-4, 2+1e-4, 0])
-        assert self.f.enthaelt_punkt(p.punkt) is False
+        assert self.f.enthaelt_punkt(p) is False
 
 class TestFassadeInkliniert3D:
     """
@@ -122,25 +124,25 @@ class TestFassadeInkliniert3D:
         """Testet den exakten Mittelpunkt der geneigten Fassade"""
         # Der Mittelpunkt der geneigten Fassade liegt bei (1.0, 0.5, 0.5)
         p = Punkt([1.0, 0.5, 0.5])
-        assert self.f.enthaelt_punkt(p.punkt) is True
+        assert self.f.enthaelt_punkt(p) is True
 
     def test_enthaelt_punkt_ausserhalb_ebene_geneigt(self):
         """Testet einen Punkt, der zwar 'drinnen' wäre, aber flach am Boden (z=0) liegt"""
         # Liegt im 2D-Schatten bei (1, 0.5, 0), ist aber nicht auf der schiefen Ebene
         p = Punkt([1.0, 0.5, 0.0])
-        assert self.f.enthaelt_punkt(p.punkt) is False
+        assert self.f.enthaelt_punkt(p) is False
 
     def test_enthaelt_punkt_auf_geneigter_kante(self):
         """Testet einen Punkt genau auf der geneigten oberen Kante"""
         # Die obere Kante verläuft von (2,1,1) nach (0,1,1). Die Mitte ist (1,1,1)
         p = Punkt([1.0, 1.0, 1.0])
-        assert self.f.enthaelt_punkt(p.punkt) is True
+        assert self.f.enthaelt_punkt(p) is True
 
     def test_enthaelt_punkt_geneigt_ausserhalb(self):
         """Testet einen Punkt auf der schiefen Ebene, aber außerhalb der oberen Grenze"""
         # Wir gehen entlang der Ebene weiter nach oben: (1, 2, 2)
         p = Punkt([1.0, 2.0, 2.0])
-        assert self.f.enthaelt_punkt(p.punkt) is False
+        assert self.f.enthaelt_punkt(p) is False
 
 class TestFassadeSuperIrregular3D:
     """
@@ -177,7 +179,7 @@ class TestFassadeSuperIrregular3D:
         """
         c = math.cos(math.radians(45))
         p = Punkt([2.0, 1.5 * c, 1.5 * c])
-        assert self.f.enthaelt_punkt(p.punkt) is True
+        assert self.f.enthaelt_punkt(p) is True
 
     def test_enthaelt_punkt_ausserhalb_nahe_einbuchtung(self):
         """
@@ -187,7 +189,7 @@ class TestFassadeSuperIrregular3D:
         """
         c = math.cos(math.radians(45))
         p = Punkt([-1.0, 1.0 * c, 1.0 * c])
-        assert self.f.enthaelt_punkt(p.punkt) is False
+        assert self.f.enthaelt_punkt(p) is False
 
     def test_enthaelt_punkt_nahe_ecke_ausserhalb(self):
         """
@@ -197,7 +199,7 @@ class TestFassadeSuperIrregular3D:
         """
         c = math.cos(math.radians(45))
         p = Punkt([4.0, -1.5 * c, -1.5 * c])
-        assert self.f.enthaelt_punkt(p.punkt) is False
+        assert self.f.enthaelt_punkt(p) is False
 
     def test_enthaelt_punkt_nicht_koplanar_chaos(self):
         """
@@ -206,7 +208,7 @@ class TestFassadeSuperIrregular3D:
         c = math.cos(math.radians(45))
         # Korrekter Innenpunkt, aber z-Koordinate manipuliert (+1.0)
         p = Punkt([2.0, 1.5 * c, (1.5 * c) + 1.0])
-        assert self.f.enthaelt_punkt(p.punkt) is False
+        assert self.f.enthaelt_punkt(p) is False
 
 class TestFassadeInteraktionen3D:
     """
@@ -404,3 +406,95 @@ class TestFassadeInteraktionen3D:
         assert self.f1.lage_fassade(f2) == "auf_kante"
         assert self.f1.schnitt_fassade(f2) is None
         assert self.f1.abstand_fassade(f2) == 0.0
+
+class TestFassadeTransformationen:
+    """
+    Testet Transformationen einer quadratischen Fassade in der xy-Ebene.
+    Größe: 2x2, Ecken bei (0,0,0), (2,0,0), (2,2,0) und (0,2,0).
+    """
+
+    def setup_method(self):
+        """Erstellt eine quadratische Fassade in der xy-Ebene"""
+        self.f = Fassade(
+            [0, 0, 0],
+            [2, 0, 0],
+            [2, 2, 0],
+            [0, 2, 0]
+        )
+
+
+    def test_skalieren(self):
+        """Überprüft, ob die Fassade korrekt skaliert wird"""
+        skaliert = self.f.skalieren(2)
+
+        assert close(skaliert.X1, [0, 0, 0])
+        assert close(skaliert.X2, [4, 0, 0])
+        assert close(skaliert.X3, [4, 4, 0])
+        assert close(skaliert.X4, [0, 4, 0])
+
+
+    def test_drehen_um_z_achse(self):
+        """Überprüft eine Drehung um 90 Grad um die z-Achse"""
+        gedreht = self.f.drehen(90, "z")
+
+        assert close(gedreht.X1, [0, 0, 0])
+        assert close(gedreht.X2, [0, 2, 0])
+        assert close(gedreht.X3, [-2, 2, 0])
+        assert close(gedreht.X4, [-2, 0, 0])
+
+
+    def test_verschieben(self):
+        """Überprüft eine Verschiebung der Fassade"""
+        v = Vektor(1, 2, 3)
+
+        verschoben = self.f.verschieben(v)
+
+        assert close(verschoben.X1, [1, 2, 3])
+        assert close(verschoben.X2, [3, 2, 3])
+        assert close(verschoben.X3, [3, 4, 3])
+        assert close(verschoben.X4, [1, 4, 3])
+
+
+    def test_spiegeln_an_punkt(self):
+        """Überprüft die Punktspiegelung am Ursprung"""
+        P = Punkt([0, 0, 0])
+
+        gespiegelt = self.f.spiegel_an_punkt(P)
+
+        assert close(gespiegelt.X1, [0, 0, 0])
+        assert close(gespiegelt.X2, [-2, 0, 0])
+        assert close(gespiegelt.X3, [-2, -2, 0])
+        assert close(gespiegelt.X4, [0, -2, 0])
+
+
+    def test_spiegeln_an_gerade(self):
+        """Überprüft die Spiegelung an der x-Achse"""
+
+        g = Gerade(
+            Punkt([0, 0, 0]),
+            Vektor(1, 0, 0)
+        )
+
+        gespiegelt = self.f.spiegel_an_gerade(g)
+
+        assert close(gespiegelt.X1, [0, 0, 0])
+        assert close(gespiegelt.X2, [2, 0, 0])
+        assert close(gespiegelt.X3, [2, -2, 0])
+        assert close(gespiegelt.X4, [0, -2, 0])
+
+
+    def test_spiegeln_an_ebene(self):
+        """Überprüft die Spiegelung an der xy-Ebene"""
+
+        E = Ebene.from_parameterform(
+            Punkt([0, 0, 0]),
+            Vektor(1, 0, 0),
+            Vektor(0, 1, 0)
+        )
+
+        gespiegelt = self.f.spiegel_an_ebene(E)
+
+        assert close(gespiegelt.X1, [0, 0, 0])
+        assert close(gespiegelt.X2, [2, 0, 0])
+        assert close(gespiegelt.X3, [2, 2, 0])
+        assert close(gespiegelt.X4, [0, 2, 0])
